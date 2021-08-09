@@ -9,7 +9,7 @@ import {
 } from 'aws-lambda';
 import * as ulid from 'ulid';
 import { URLSearchParams } from 'url';
-import { RequestIdHeaders } from './header';
+import { ApplicationJson, HttpHeader, RequestIdHeaders } from './header';
 import { LogType } from './log';
 import { LambdaHttpResponse } from './response';
 
@@ -59,6 +59,21 @@ export abstract class LambdaHttpRequest<
       this._isHeadersLoaded = true;
     }
     return this.headers.get(key.toLowerCase());
+  }
+
+  /** Attempt to parse the body as JSON */
+  json(): Record<string, unknown> {
+    if (this.header(HttpHeader.ContentType) !== ApplicationJson) {
+      throw new Error(`Invalid Content-Type: "${this.header('content-type')}"`);
+    }
+
+    if (this.body == null) throw new Error('Cannot parse empty body as JSONN');
+    try {
+      if (this.isBase64Encoded) return JSON.parse(Buffer.from(this.body ?? '', 'base64').toString());
+      return JSON.parse(this.body);
+    } catch (e) {
+      throw new Error('Body is not a JSON object');
+    }
   }
 
   abstract toResponse(res: LambdaHttpResponse): Response;

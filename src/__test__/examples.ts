@@ -128,8 +128,8 @@ export const AlbExample: ALBEvent = {
         'arn:aws:elasticloadbalancing:ap-southeast-2:000000000:targetgroup/Serve-LBHtt-1OHAJAJC2EOCV/c7cdb5edeadbeefa9',
     },
   },
-  httpMethod: 'GET',
-  path: '/v1/tiles/aerial/EPSG:3857/6/3/41.webp',
+  httpMethod: 'POST',
+  path: '/v1/tiles/aerial/EPSG:3857/6/3/41.json',
   queryStringParameters: {
     api: 'abc123',
   },
@@ -141,6 +141,7 @@ export const AlbExample: ALBEvent = {
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
     'user-agent': 'Amazon CloudFront',
+    'content-type': 'application/json',
     via: '2.0 ba7353b1182f8842b4cc2c50f1a0b483.cloudfront.net (CloudFront)',
     'x-amz-cf-id': '2KH_vk3iG4JdLC6IYdoby0jDrPePElLNSGGLERDsgHU2ir_W_c0PeQ==',
     'x-amzn-trace-id': 'Self=1-61106e71-29b2fd296a0a4ad55a408771;Root=1-61106e71-20944ade017732db548d71b2',
@@ -148,8 +149,8 @@ export const AlbExample: ALBEvent = {
     'x-forwarded-port': '443',
     'x-forwarded-proto': 'https',
   },
-  body: '',
-  isBase64Encoded: false,
+  body: Buffer.from(JSON.stringify({ status: 'ok' })).toString('base64'),
+  isBase64Encoded: true,
 };
 
 export function clone<T>(c: T): T {
