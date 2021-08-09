@@ -1,3 +1,12 @@
+# [0.3.0](https://github.com/linz/lambda/compare/v0.2.0...v0.3.0) (2021-08-09)
+
+
+### Features
+
+* support .json() to parse the body as json if content-type is application/json ([9173dd9](https://github.com/linz/lambda/commit/9173dd9f37c7d7b6e6267648251514f960a32934))
+
+
+
 # [0.2.0](https://github.com/linz/lambda/compare/v0.1.1...v0.2.0) (2021-08-09)
 
 
