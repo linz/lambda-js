@@ -1,5 +1,5 @@
 # Lambda HTTP wrapper @linzjs/lambda
-### _A minimal lambda wraper for LINZ Javascript development_
+### _A minimal lambda wrapper for LINZ Javascript development_
 
 * Automatically chooses the correct output event format based on input event (API Gateway, ALB or Cloudfront)
 * Generates a request id for every request using a [ULID](https://github.com/ulid/spec) (LINZ standard)
