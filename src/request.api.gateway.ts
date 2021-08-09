@@ -50,4 +50,12 @@ export class LambdaApiGatewayRequest extends LambdaHttpRequest<APIGatewayEvent, 
   get method(): string {
     return this.event.httpMethod.toUpperCase();
   }
+
+  get body(): string | null {
+    return this.event.body;
+  }
+
+  get isBase64Encoded(): boolean {
+    return this.event.isBase64Encoded;
+  }
 }

@@ -28,7 +28,6 @@ export class LambdaCloudFrontRequest extends LambdaHttpRequest<CloudFrontRequest
 
   toHeaders(res: LambdaHttpResponse): Record<string, { key: string; value: string }[]> | undefined {
     if (res.headers.size === 0) return {};
-
     const obj: Record<string, { key: string; value: string }[]> = {};
     for (const prop of res.headers) obj[prop[0]] = [{ key: prop[0], value: String(prop[1]) }];
     return obj;
@@ -52,5 +51,15 @@ export class LambdaCloudFrontRequest extends LambdaHttpRequest<CloudFrontRequest
 
   get method(): string {
     return this.event.Records[0].cf.request.method.toUpperCase();
+  }
+
+  get body(): string | null {
+    const body = this.event.Records[0].cf.request.body;
+    if (body == null) return null;
+    return body.data;
+  }
+
+  get isBase64Encoded(): boolean {
+    return this.event.Records[0].cf.request.body?.encoding === 'base64';
   }
 }

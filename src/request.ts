@@ -74,6 +74,12 @@ export abstract class LambdaHttpRequest<
   /**  */
   abstract path: string;
 
+  /** Body if provided null otherwise, this could be base64 encoded see @see this.isBase64Encoded */
+  abstract body: string | null;
+
+  /** Is the body base64 encoded */
+  abstract isBase64Encoded: boolean;
+
   _query: URLSearchParams;
   /** Query string parameters */
   get query(): URLSearchParams {

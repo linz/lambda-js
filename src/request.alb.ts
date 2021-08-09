@@ -34,6 +34,10 @@ export class LambdaAlbRequest extends LambdaHttpRequest<ALBEvent, ALBResult> {
     }
   }
 
+  loadQueryString(): URLSearchParams {
+    return new URLSearchParams(this.event.queryStringParameters);
+  }
+
   get method(): string {
     return this.event.httpMethod.toUpperCase();
   }
@@ -42,7 +46,11 @@ export class LambdaAlbRequest extends LambdaHttpRequest<ALBEvent, ALBResult> {
     return this.event.path;
   }
 
-  loadQueryString(): URLSearchParams {
-    return new URLSearchParams(this.event.queryStringParameters);
+  get body(): string | null {
+    return this.event.body;
+  }
+
+  get isBase64Encoded(): boolean {
+    return this.event.isBase64Encoded;
   }
 }
