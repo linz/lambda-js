@@ -20,9 +20,7 @@ export abstract class LambdaHttpRequest<
   Request extends HttpRequestEvent = HttpRequestEvent,
   Response extends HttpResponse = HttpResponse,
 > {
-  event: Request;
-  logCtx: Record<string, unknown> = {};
-
+  public event: Request;
   public id: string;
   public correlationId: string;
   public logContext: Record<string, unknown> = {};
@@ -46,7 +44,7 @@ export abstract class LambdaHttpRequest<
   /** Set a logging context, this will be logged at the end of the request */
   set(key: string, value: unknown): void {
     if (value == null) value = undefined;
-    this.logCtx[key] = value;
+    this.logContext[key] = value;
   }
 
   /**

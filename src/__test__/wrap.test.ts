@@ -5,7 +5,7 @@ import { LambdaFunction } from '../function';
 import { LambdaHttpRequest } from '../request';
 import { LambdaHttpResponse } from '../response';
 import { AlbExample, ApiGatewayExample, CloudfrontExample } from './examples';
-import { fakeLog } from './log';
+import { FakeLog, fakeLog } from './log';
 
 function assertAlbResult(x: unknown): asserts x is ALBResult {}
 function assertCloudfrontResult(x: unknown): asserts x is CloudFrontResultResponse {}
@@ -17,10 +17,29 @@ o.spec('LambdaWrap', () => {
   const requests: LambdaHttpRequest[] = [];
   async function fakeLambda(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
     requests.push(req);
+    req.set('setTest', req.id);
     return new LambdaHttpResponse(200, 'ok');
   }
   o.beforeEach(() => {
     requests.length = 0;
+  });
+
+  o('should log a metalog at the end of the request', async () => {
+    const log = new FakeLog();
+    const fn = LambdaFunction.wrap(fakeLambda, log);
+    await new Promise((resolve) => fn(AlbExample, fakeContext, (a, b) => resolve(b)));
+
+    o(log.logs.length).equals(1);
+
+    const firstLog = log.logs[0];
+    o(firstLog['@type']).equals('report');
+    o(typeof firstLog['duration'] === 'number').equals(true);
+    o(firstLog['status']).equals(200);
+    o(firstLog['method']).equals('POST');
+    o(firstLog['path']).equals('/v1/tiles/aerial/EPSG:3857/6/3/41.json');
+    o(firstLog['id']).equals(requests[0].id);
+    o(firstLog['setTest']).equals(requests[0].id);
+    o(firstLog['correlationId']).equals(requests[0].correlationId);
   });
 
   o('should respond to alb events', async () => {
