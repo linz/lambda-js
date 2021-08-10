@@ -1,3 +1,12 @@
+## [0.3.1](https://github.com/linz/lambda/compare/v0.3.0...v0.3.1) (2021-08-10)
+
+
+### Bug Fixes
+
+* correctly log the extra log context at the end of the request ([93a6435](https://github.com/linz/lambda/commit/93a6435af5df95aa041218ec3294786fa8836e34))
+
+
+
 # [0.3.0](https://github.com/linz/lambda/compare/v0.2.0...v0.3.0) (2021-08-09)
 
 
