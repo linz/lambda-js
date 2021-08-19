@@ -9,7 +9,7 @@ import {
 } from 'aws-lambda';
 import * as ulid from 'ulid';
 import { URLSearchParams } from 'url';
-import { ApplicationJson, HttpHeader, RequestIdHeaders } from './header';
+import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header';
 import { LogType } from './log';
 import { LambdaHttpResponse } from './response';
 
@@ -36,7 +36,7 @@ export abstract class LambdaHttpRequest<
     this.event = request;
     this.timer = new Metrics();
 
-    this.correlationId = this.header(RequestIdHeaders.CorrelationId) ?? ulid.ulid();
+    this.correlationId = this.header(HttpHeaderRequestId.CorrelationId) ?? ulid.ulid();
     this.set('correlationId', this.correlationId);
     this.log = log.child({ id: this.id });
   }

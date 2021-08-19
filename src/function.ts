@@ -1,5 +1,5 @@
 import { Callback, Context } from 'aws-lambda';
-import { ApplicationJson, HttpHeader, HttpHeaderAmazon, RequestIdHeaders } from './header';
+import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from './header';
 import { LogType } from './log';
 import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './request';
 import { LambdaAlbRequest } from './request.alb';
@@ -82,8 +82,8 @@ export class LambdaFunction {
       req.set('description', res.statusDescription);
       req.set('metrics', req.timer.metrics);
 
-      res.header(RequestIdHeaders.RequestId, req.id);
-      res.header(RequestIdHeaders.CorrelationId, req.correlationId);
+      res.header(HttpHeaderRequestId.RequestId, req.id);
+      res.header(HttpHeaderRequestId.CorrelationId, req.correlationId);
 
       const duration = req.timer.end('lambda');
       req.set('unfinished', req.timer.unfinished);

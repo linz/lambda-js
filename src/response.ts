@@ -1,4 +1,4 @@
-import { ApplicationJson, HttpHeader, RequestIdHeaders } from './header';
+import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header';
 
 export class LambdaHttpResponse {
   /** Http status code */
@@ -51,10 +51,10 @@ export class LambdaHttpResponse {
     if (this.body == null) {
       this.header(HttpHeader.ContentType, ApplicationJson);
       return JSON.stringify({
-        id: this.header(RequestIdHeaders.RequestId),
+        id: this.header(HttpHeaderRequestId.RequestId),
         status: this.status,
         message: this.statusDescription,
-        correlationId: this.header(RequestIdHeaders.CorrelationId),
+        correlationId: this.header(HttpHeaderRequestId.CorrelationId),
       });
     }
 

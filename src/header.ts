@@ -18,7 +18,7 @@ export const HttpHeaderAmazon = {
   TraceId: 'X-Amzn-Trace-Id',
 };
 
-export const RequestIdHeaders = {
+export const HttpHeaderRequestId = {
   CorrelationId: 'X-LINZ-Correlation-Id',
   RequestId: 'X-LINZ-Request-Id',
 };
