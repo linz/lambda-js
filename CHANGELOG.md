@@ -1,3 +1,12 @@
+## [0.3.2](https://github.com/linz/lambda-http/compare/v0.3.1...v0.3.2) (2021-08-19)
+
+
+### Bug Fixes
+
+* expose http header objects ([a49035e](https://github.com/linz/lambda-http/commit/a49035e5303a8c1a4e3455dec38cbed57a01a97f))
+
+
+
 ## [0.3.1](https://github.com/linz/lambda/compare/v0.3.0...v0.3.1) (2021-08-10)
 
 
