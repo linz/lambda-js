@@ -1,3 +1,12 @@
+## [1.0.1](https://github.com/linz/lambda-js/compare/v1.0.0...v1.0.1) (2021-08-27)
+
+
+### Features
+
+* reject lambda if unhandled errors happen ([5b121b3](https://github.com/linz/lambda-js/commit/5b121b341ec1c18a5fec8e7313d92c352722ec4d))
+
+
+
 # [1.0.0](https://github.com/linz/lambda-js/compare/v0.3.2...v1.0.0) (2021-08-27)
 
 
