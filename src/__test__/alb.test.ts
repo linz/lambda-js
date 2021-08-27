@@ -1,37 +1,39 @@
+import { Context } from 'aws-lambda';
 import o from 'ospec';
 import { LambdaAlbRequest } from '../request.alb';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples';
 import { fakeLog } from './log';
 
 o.spec('AlbGateway', () => {
+  const fakeContext = {} as Context;
+
   o('should match the event', () => {
     o(LambdaAlbRequest.is(ApiGatewayExample)).equals(false);
     o(LambdaAlbRequest.is(CloudfrontExample)).equals(false);
-
     o(LambdaAlbRequest.is(AlbExample)).equals(true);
   });
 
   o('should extract headers', () => {
-    const req = new LambdaAlbRequest(AlbExample, fakeLog);
+    const req = new LambdaAlbRequest(AlbExample, fakeContext, fakeLog);
 
     o(req.header('accept-encoding')).equals('gzip');
     o(req.header('Accept-Encoding')).equals('gzip');
   });
 
   o('should extract methods', () => {
-    const req = new LambdaAlbRequest(AlbExample, fakeLog);
+    const req = new LambdaAlbRequest(AlbExample, fakeContext, fakeLog);
     o(req.method).equals('POST');
   });
 
   o('should upper case method', () => {
     const newReq = clone(AlbExample);
     newReq.httpMethod = 'get';
-    const req = new LambdaAlbRequest(newReq, fakeLog);
+    const req = new LambdaAlbRequest(newReq, fakeContext, fakeLog);
     o(req.method).equals('GET');
   });
 
   o('should extract query parameters', () => {
-    const req = new LambdaAlbRequest(AlbExample, fakeLog);
+    const req = new LambdaAlbRequest(AlbExample, fakeContext, fakeLog);
     o(req.query.get('api')).deepEquals('abc123');
     o(req.query.getAll('api')).deepEquals(['abc123']);
   });

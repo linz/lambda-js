@@ -1,17 +1,18 @@
 import { APIGatewayEvent, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { URLSearchParams } from 'url';
-import { LambdaHttpRequest, HttpRequestEvent } from './request';
-import { LambdaHttpResponse } from './response';
+import { isRecord } from './request';
+import { LambdaHttpRequest } from './request.http';
+import { LambdaHttpResponse } from './response.http';
 
 export class LambdaApiGatewayRequest extends LambdaHttpRequest<APIGatewayEvent, APIGatewayProxyResultV2> {
-  static is(x: HttpRequestEvent): x is APIGatewayEvent {
-    return 'requestContext' in x && 'apiId' in x['requestContext'];
+  static is(x: unknown): x is APIGatewayEvent {
+    return isRecord(x) && isRecord(x['requestContext']) && typeof x['requestContext']['apiId'] === 'string';
   }
 
   toResponse(res: LambdaHttpResponse): APIGatewayProxyResultV2 {
     return {
       statusCode: res.status,
-      body: res.getBody(),
+      body: res.body,
       headers: this.toHeaders(res),
       isBase64Encoded: res.isBase64Encoded,
     };

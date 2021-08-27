@@ -1,18 +1,19 @@
 import { ALBEvent, ALBResult } from 'aws-lambda';
 import { URLSearchParams } from 'url';
-import { HttpRequestEvent, LambdaHttpRequest } from './request';
-import { LambdaHttpResponse } from './response';
+import { isRecord } from './request';
+import { LambdaHttpRequest } from './request.http';
+import { LambdaHttpResponse } from './response.http';
 
 export class LambdaAlbRequest extends LambdaHttpRequest<ALBEvent, ALBResult> {
-  static is(x: HttpRequestEvent): x is ALBEvent {
-    return 'requestContext' in x && 'elb' in x['requestContext'];
+  static is(x: unknown): x is ALBEvent {
+    return isRecord(x) && isRecord(x['requestContext']) && isRecord(x['requestContext']['elb']);
   }
 
   toResponse(res: LambdaHttpResponse): ALBResult {
     return {
       statusCode: res.status,
       statusDescription: res.statusDescription,
-      body: res.getBody(),
+      body: res.body,
       headers: this.toHeaders(res.headers),
       isBase64Encoded: res.isBase64Encoded,
     };
