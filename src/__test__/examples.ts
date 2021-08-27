@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent } from 'aws-lambda';
 
 export const ApiGatewayExample: APIGatewayProxyEvent = {

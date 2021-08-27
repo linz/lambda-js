@@ -1,12 +1,18 @@
 import { CloudFrontRequestEvent, CloudFrontRequestResult } from 'aws-lambda';
-import { LambdaHttpRequest, HttpRequestEvent } from './request';
-import { LambdaHttpResponse } from './response';
 import { URLSearchParams } from 'url';
+import { isRecord } from './request';
+import { LambdaHttpRequest } from './request.http';
+import { LambdaHttpResponse } from './response.http';
 
 export class LambdaCloudFrontRequest extends LambdaHttpRequest<CloudFrontRequestEvent, CloudFrontRequestResult> {
-  static is(x: HttpRequestEvent): x is CloudFrontRequestEvent {
-    return 'Records' in x && Array.isArray(x['Records']);
+  static is(x: unknown): x is CloudFrontRequestEvent {
+    if (!isRecord(x)) return false;
+    if (!Array.isArray(x['Records'])) return false;
+    const firstRecord = x['Records'][0];
+    if (!isRecord(firstRecord)) return false;
+    return isRecord(firstRecord['cf']);
   }
+
   toResponse(res: LambdaHttpResponse): CloudFrontRequestResult {
     // Continue
     if (res.status === 100 && this.event != null) {
@@ -20,7 +26,7 @@ export class LambdaCloudFrontRequest extends LambdaHttpRequest<CloudFrontRequest
     return {
       status: String(res.status),
       statusDescription: res.statusDescription,
-      body: res.getBody(),
+      body: res.body,
       headers: this.toHeaders(res),
       bodyEncoding: 'text',
     };

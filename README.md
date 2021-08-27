@@ -1,27 +1,40 @@
-# Lambda HTTP wrapper @linzjs/lambda
+# Lambda wrapper @linzjs/lambda
 ### _A minimal lambda wrapper for LINZ Javascript lambda function development_
 
-* Automatically chooses the correct output event format based on input event (API Gateway, ALB or Cloudfront)
-* Generates a request id for every request using a [ULID](https://github.com/ulid/spec) (LINZ standard)
+* Automatically chooses the correct HTTP output event format based on input event (API Gateway, ALB or Cloudfront)
+* Generates a request id for every request using a [ULID](https://github.com/ulid/spec) 
 * Automatically Logs the correlationId if one is provided to the function.
-* Logs a meta log at the end of the request
+* Logs a meta log at the end of the request `@type: "report"`
 * Tracks performance and logs request `duration` & metrics using [@linzjs/metrics](https://www.npmjs.com/package/@linzjs/metrics)
 
 ## Why?
 
-This repository wraps the default lambda handler so it can be invoked by ALB, API Gateway or Cloudfront without requiring code changes, 
-while also apply the LINZ lambda defaults
+This repository wraps the default lambda handler so it can be invoked by ALB, API Gateway or Cloudfront without requiring code changes, while also apply a opinionated set of lambda defaults
 
 
+#### Http
 ```typescript
-import {LambdaFunction, LambdaHttpResponse} from '@linzjs/lambda';
+import {lf, LambdaHttpResponse} from '@linzjs/lambda';
 
 // This works for Cloud front, ALB or API Gateway events
-export const handler = LambdaFunction.wrap(async (req) => {
-    if (req.method !== 'POST') throw new LambdaHttpResponse(400, 'Invalid method');
-    return LambdaHttpResponse(200, 'Ok)
+export const handler = lf.http(async (req) => {
+  if (req.method !== 'POST') throw new LambdaHttpResponse(400, 'Invalid method');
+  return new LambdaHttpResponse(200, 'Ok');
 });
 ```
+
+#### Lambda
+```typescript
+import {lf} from '@linzjs/lambda';
+
+export const handler = lf.handler<S3Event>(async (req) => {
+    if (req.event.Records.length === 0) throw new Error('No records provided');
+    for (const evt of req.event.Records) {
+        req.log.info({key: evt.key}, 'Request s3')
+    }
+});
+```
+
 
 ### Request ID generation
 

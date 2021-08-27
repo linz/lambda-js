@@ -3,7 +3,7 @@
   "version": "0.3.2",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
-  "repository": "git@github.com:linz/lambda-http.git",
+  "repository": "git@github.com:linz/lambda-js.git",
   "license": "MIT",
   "author": {
     "name": "Land Information New Zealand",
@@ -16,7 +16,8 @@
     "@types/node": "^16.4.13",
     "@types/ospec": "^4.0.2",
     "conventional-changelog-cli": "^2.1.1",
-    "ospec": "^4.1.1"
+    "ospec": "^4.1.1",
+    "source-map-support": "^0.5.19"
   },
   "scripts": {
     "build": "tsc",
