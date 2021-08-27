@@ -1,3 +1,20 @@
+# [1.0.0](https://github.com/linz/lambda-js/compare/v0.3.2...v1.0.0) (2021-08-27)
+
+
+### Features
+
+* support non http lambda types ([#10](https://github.com/linz/lambda-js/issues/10)) ([ae9d1ae](https://github.com/linz/lambda-js/commit/ae9d1ae7b4832f90e4953ecf841e39883b66256d))
+
+
+### BREAKING CHANGES
+
+* modifies the base api
+
+- `LambdaFunction.wrap` is now `lf.http`
+- `lf.handler` can wrap any lambda event such as s3 events
+
+
+
 ## [0.3.2](https://github.com/linz/lambda-http/compare/v0.3.1...v0.3.2) (2021-08-19)
 
 
