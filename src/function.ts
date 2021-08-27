@@ -103,17 +103,25 @@ export class lf {
    * - Catch errors and log them before exiting
    *
    * @param fn Function to wrap
+   * @param options.rejectOnError Should errors be handled and logged or reject the callback
    * @param logger optional logger to use for the request @see lf.Logger
    */
   public static handler<TEvent, TResult = unknown>(
     fn: LambdaWrappedFunction<TEvent>,
+    options: { rejectOnError: boolean } = { rejectOnError: true },
     logger?: LogType,
   ): LambdaHandler<TEvent, TResult> {
     function handler(event: TEvent, context: Context, callback: Callback<TResult>): void {
       const req = new LambdaRequest<TEvent, TResult>(event, context, logger ?? lf.Logger);
       const lambdaId = context.awsRequestId;
       req.set('aws', { lambdaId });
-      execute(req, fn).then((res) => callback(null, req.toResponse(res)));
+      execute(req, fn).then((res) => {
+        if (options.rejectOnError && LambdaHttpResponse.is(res)) {
+          if (req.logContext['err']) return callback(req.logContext['err'] as Error);
+          if (res.status > 399) return callback(req.toResponse(res) as unknown as string);
+        }
+        return callback(null, req.toResponse(res));
+      });
     }
     return handler;
   }

@@ -104,17 +104,29 @@ o.spec('LambdaWrap', () => {
     const fn = lf.handler(() => {
       throw new Error('Fake');
     });
-    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
-    o(ret).equals(JSON.stringify({ status: 500, message: 'Internal Server Error' }));
+    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a) => resolve(a)));
+    o(String(ret)).deepEquals('Error: Fake');
 
     o(fakeLog.logs.length).equals(1);
 
     const firstLog = fakeLog.logs[0];
+    o(firstLog.level).equals('error');
     o(String(firstLog.err)).equals('Error: Fake');
     o(firstLog.status).equals(500);
     o(typeof firstLog.id).equals('string');
     o(firstLog['@type']).equals('report');
     o((firstLog.duration as number) >= 0).equals(true);
+  });
+
+  o('should handle exceptions and resolve', async () => {
+    const fn = lf.handler(
+      () => {
+        throw new Error('Fake');
+      },
+      { rejectOnError: false },
+    );
+    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve({ a, b })));
+    o(ret).deepEquals({ a: null, b: JSON.stringify({ status: 500, message: 'Internal Server Error' }) });
   });
 
   o('should pass body through', async () => {
