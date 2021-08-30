@@ -156,4 +156,29 @@ o.spec('LambdaWrap', () => {
     assertsApiGatewayResult(ret);
     o(ret.headers?.['server']).equals(undefined);
   });
+
+  o('should trace slow requests', async () => {
+    const fn = lf.handler(
+      async (): Promise<void> => {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      },
+      { traceTimeout: true },
+    );
+
+    const ctx = {
+      ...fakeContext,
+      awsRequestId: 'awsRequestId',
+      getRemainingTimeInMillis(): number {
+        return 150;
+      },
+    };
+
+    await new Promise((resolve) => fn(ApiGatewayExample, ctx, (a, b) => resolve([a, b])));
+
+    const firstLog = fakeLog.logs[0];
+    o(fakeLog.logs.length).equals(2);
+    o(firstLog['@type']).equals('slow');
+    const aws = firstLog['aws'] as Record<string, string>;
+    o(aws['lambdaId']).equals(ctx.awsRequestId);
+  });
 });

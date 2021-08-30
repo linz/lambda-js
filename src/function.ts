@@ -64,8 +64,6 @@ async function execute<T extends LambdaRequest, K>(
   req.set('status', status);
   req.set('metrics', req.timer.metrics);
 
-  if (versionInfo.hash) req.set('package', versionInfo);
-
   const duration = req.timer.end('lambda');
   req.set('unfinished', req.timer.unfinished);
   req.set('duration', duration);
@@ -78,6 +76,29 @@ async function execute<T extends LambdaRequest, K>(
   else req.log.info(req.logContext, 'Lambda:Done');
 
   return res;
+}
+
+function traceSlowRequest(req: LambdaRequest): void {
+  req.log.warn(
+    { ...req.logContext, metrics: req.timer.metrics, unfinished: req.timer.unfinished, '@type': 'slow' },
+    'Lambda:Slow',
+  );
+}
+
+interface HandlerOptions {
+  /** Should the lambda reject on catching a error */
+  rejectOnError: boolean;
+  /** 100ms before the timeout log a "Labmda:Slow" warning log */
+  traceTimeout: boolean;
+}
+
+function addDefaultOptions(opts: Partial<HandlerOptions> = {}): HandlerOptions {
+  const options: HandlerOptions = {
+    rejectOnError: true,
+    traceTimeout: false,
+    ...opts,
+  };
+  return options;
 }
 
 export class lf {
@@ -104,24 +125,36 @@ export class lf {
    *
    * @param fn Function to wrap
    * @param options.rejectOnError Should errors be handled and logged or reject the callback
+   * @param options.traceTimeout Schedule a callback for just 100ms before the lambda timeout to trace functions which time out
    * @param logger optional logger to use for the request @see lf.Logger
    */
   public static handler<TEvent, TResult = unknown>(
     fn: LambdaWrappedFunction<TEvent>,
-    options: { rejectOnError: boolean } = { rejectOnError: true },
+    options?: Partial<HandlerOptions>,
     logger?: LogType,
   ): LambdaHandler<TEvent, TResult> {
+    const opts: HandlerOptions = addDefaultOptions(options);
+
     function handler(event: TEvent, context: Context, callback: Callback<TResult>): void {
       const req = new LambdaRequest<TEvent, TResult>(event, context, logger ?? lf.Logger);
       const lambdaId = context.awsRequestId;
       req.set('aws', { lambdaId });
-      execute(req, fn).then((res) => {
-        if (options.rejectOnError && LambdaHttpResponse.is(res)) {
-          if (req.logContext['err']) return callback(req.logContext['err'] as Error);
-          if (res.status > 399) return callback(req.toResponse(res) as unknown as string);
-        }
-        return callback(null, req.toResponse(res));
-      });
+      if (versionInfo.hash) req.set('package', versionInfo);
+
+      let slowTimer: NodeJS.Timer | null = null;
+      if (opts.traceTimeout) {
+        slowTimer = setTimeout(() => traceSlowRequest(req), context.getRemainingTimeInMillis() - 100);
+      }
+
+      execute(req, fn)
+        .then((res) => {
+          if (opts.rejectOnError && LambdaHttpResponse.is(res)) {
+            if (req.logContext['err']) return callback(req.logContext['err'] as Error);
+            if (res.status > 399) return callback(req.toResponse(res) as unknown as string);
+          }
+          return callback(null, req.toResponse(res));
+        })
+        .finally(() => (slowTimer ? clearTimeout(slowTimer) : undefined));
     }
     return handler;
   }
