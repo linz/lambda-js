@@ -26,7 +26,7 @@ export class LambdaRequest<T = unknown, K = unknown> {
     this.id = ulid();
     this.log = log;
     this.timer = new Metrics();
-    this.log = log.child({ id: this.id });
+    this.log = log.child({ id: this.id, aws: { lambdaId: ctx.awsRequestId } });
   }
 
   /** Set a logging context, this will be logged at the end of the request */
