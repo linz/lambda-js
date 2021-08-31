@@ -81,15 +81,30 @@ async function execute<T extends LambdaRequest, K>(
 }
 
 interface LambdaHandlerOptions {
-  /** Should errors be handled and logged or reject the callback */
+  /**
+   * Should errors be handled and logged or reject the callback
+   * @default true
+   */
   rejectOnError: boolean;
+
+  /**
+   * Percentage of requests to be set to `trace` level logging.
+   * Number between 0 and 1, 1 meaning all requests are traced
+   * @default 0
+   */
+  tracePercent: number;
 }
 
 function addDefaultOptions(o?: Partial<LambdaHandlerOptions>): LambdaHandlerOptions {
-  return {
+  const opts = {
     rejectOnError: true,
+    tracePercent: 0,
     ...o,
   };
+  if (isNaN(opts.tracePercent) || opts.tracePercent > 1) {
+    throw new Error('tracePercent is not between 0-1 :' + opts.tracePercent);
+  }
+  return opts;
 }
 
 export class lf {
@@ -115,7 +130,7 @@ export class lf {
    * - Catch errors and log them before exiting
    *
    * @param fn Function to wrap
-   * @param options.rejectOnError Should errors be handled and logged or reject the callback
+   * @param options Configuration options
    * @param logger optional logger to use for the request @see lf.Logger
    */
   public static handler<TEvent, TResult = unknown>(
@@ -126,8 +141,14 @@ export class lf {
     const opts = addDefaultOptions(options);
     function handler(event: TEvent, context: Context, callback: Callback<TResult>): void {
       const req = new LambdaRequest<TEvent, TResult>(event, context, logger ?? lf.Logger);
+      if (opts.tracePercent > 0 && Math.random() < opts.tracePercent) req.log.level = 'trace';
+      if (process.env.TRACE_LAMBDA) req.log.level = 'trace';
+
+      req.log.trace({ event }, 'Lambda:Start');
+
       const lambdaId = context.awsRequestId;
       req.set('aws', { lambdaId });
+
       execute(req, fn).then((res) => {
         if (opts.rejectOnError && LambdaHttpResponse.is(res)) {
           if (req.logContext['err']) return callback(req.logContext['err'] as Error);

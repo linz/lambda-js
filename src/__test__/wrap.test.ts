@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ALBResult, APIGatewayProxyStructuredResultV2, CloudFrontResultResponse, Context } from 'aws-lambda';
 import o from 'ospec';
+import sinon from 'sinon';
 import { lf } from '../function';
+import { LambdaRequest } from '../request';
 import { LambdaHttpRequest } from '../request.http';
 import { LambdaHttpResponse } from '../response.http';
 import { AlbExample, ApiGatewayExample, CloudfrontExample } from './examples';
@@ -13,6 +15,7 @@ function assertsApiGatewayResult(x: unknown): asserts x is APIGatewayProxyStruct
 
 o.spec('LambdaWrap', () => {
   const fakeContext = {} as Context;
+  const sandbox = sinon.createSandbox();
 
   const requests: LambdaHttpRequest[] = [];
   async function fakeLambda(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
@@ -107,9 +110,9 @@ o.spec('LambdaWrap', () => {
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a) => resolve(a)));
     o(String(ret)).deepEquals('Error: Fake');
 
-    o(fakeLog.logs.length).equals(1);
+    o(fakeLog.logs.length).equals(2);
 
-    const firstLog = fakeLog.logs[0];
+    const firstLog = fakeLog.logs[1];
     o(firstLog.level).equals('error');
     o(String(firstLog.err)).equals('Error: Fake');
     o(firstLog.status).equals(500);
@@ -136,9 +139,9 @@ o.spec('LambdaWrap', () => {
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
     o(ret).equals('fooBar');
 
-    o(fakeLog.logs.length).equals(1);
+    o(fakeLog.logs.length).equals(2);
 
-    const firstLog = fakeLog.logs[0];
+    const firstLog = fakeLog.logs[1];
     o(firstLog.err).equals(undefined);
     o(firstLog.status).equals(200);
     o(typeof firstLog.id).equals('string');
@@ -155,5 +158,42 @@ o.spec('LambdaWrap', () => {
     lf.ServerName = serverName;
     assertsApiGatewayResult(ret);
     o(ret.headers?.['server']).equals(undefined);
+  });
+
+  o('should trace some requests', async () => {
+    const logLevels = new Map<string, number>();
+    function fakeFn(req: LambdaRequest): void {
+      logLevels.set(req.log.level, (logLevels.get(req.log.level) ?? 0) + 1);
+    }
+    let random = 0;
+    sandbox.stub(Math, 'random').callsFake(() => {
+      const ret = random;
+      random += 0.01;
+      return ret;
+    });
+
+    const fn = lf.handler(fakeFn, { tracePercent: 0.5 });
+    for (let i = 0; i < 100; i++) {
+      await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
+    }
+    o(logLevels.get('debug')).equals(50);
+    o(logLevels.get('trace')).equals(50);
+  });
+
+  o('should trace all requests', async () => {
+    process.env['TRACE_LAMBDA'] = 'true';
+    const logLevels = new Map<string, number>();
+    function fakeFn(req: LambdaRequest): void {
+      logLevels.set(req.log.level, (logLevels.get(req.log.level) ?? 0) + 1);
+    }
+
+    const fn = lf.handler(fakeFn, { tracePercent: 0.1 });
+    for (let i = 0; i < 10; i++) {
+      await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
+    }
+    o(logLevels.get('debug')).equals(undefined);
+    o(logLevels.get('trace')).equals(10);
+
+    delete process.env['TRACE_LAMBDA'];
   });
 });
