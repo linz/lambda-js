@@ -80,6 +80,18 @@ async function execute<T extends LambdaRequest, K>(
   return res;
 }
 
+interface LambdaHandlerOptions {
+  /** Should errors be handled and logged or reject the callback */
+  rejectOnError: boolean;
+}
+
+function addDefaultOptions(o?: Partial<LambdaHandlerOptions>): LambdaHandlerOptions {
+  return {
+    rejectOnError: true,
+    ...o,
+  };
+}
+
 export class lf {
   /** Default logger to use if one is not provided */
   static Logger: LogType = pino();
@@ -108,15 +120,16 @@ export class lf {
    */
   public static handler<TEvent, TResult = unknown>(
     fn: LambdaWrappedFunction<TEvent>,
-    options: { rejectOnError: boolean } = { rejectOnError: true },
+    options?: Partial<LambdaHandlerOptions>,
     logger?: LogType,
   ): LambdaHandler<TEvent, TResult> {
+    const opts = addDefaultOptions(options);
     function handler(event: TEvent, context: Context, callback: Callback<TResult>): void {
       const req = new LambdaRequest<TEvent, TResult>(event, context, logger ?? lf.Logger);
       const lambdaId = context.awsRequestId;
       req.set('aws', { lambdaId });
       execute(req, fn).then((res) => {
-        if (options.rejectOnError && LambdaHttpResponse.is(res)) {
+        if (opts.rejectOnError && LambdaHttpResponse.is(res)) {
           if (req.logContext['err']) return callback(req.logContext['err'] as Error);
           if (res.status > 399) return callback(req.toResponse(res) as unknown as string);
         }
