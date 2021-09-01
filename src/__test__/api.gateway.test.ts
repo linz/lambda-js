@@ -37,6 +37,16 @@ o.spec('ApiGateway', () => {
     o(req.query.getAll('foo')).deepEquals(['bar']);
   });
 
+  o('should be case-insensitive query parameters', () => {
+    const obj = clone(ApiGatewayExample);
+    delete obj.multiValueQueryStringParameters!['foo'];
+    obj.multiValueQueryStringParameters!['FoO'] = ['bar'];
+
+    const req = new LambdaApiGatewayRequest(ApiGatewayExample, fakeContext, fakeLog);
+    o(req.query.get('foo')).deepEquals('bar');
+    o(req.query.getAll('foo')).deepEquals(['bar']);
+  });
+
   o('should extract all query parameters', () => {
     const newReq = clone(ApiGatewayExample);
     newReq.multiValueQueryStringParameters!.foo = ['foo', 'bar'];

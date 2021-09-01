@@ -47,8 +47,8 @@ export class LambdaCloudFrontRequest extends LambdaHttpRequest<CloudFrontRequest
 
   loadQueryString(): URLSearchParams {
     const query = this.event.Records[0].cf.request.querystring;
-    if (query == null || query[0] == null) return new URLSearchParams();
-    return new URLSearchParams(query[0] === '?' ? query.substr(1) : query);
+    if (query == null) return new URLSearchParams();
+    return new URLSearchParams(query.toLowerCase());
   }
 
   get path(): string {

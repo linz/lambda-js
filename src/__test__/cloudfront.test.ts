@@ -38,6 +38,14 @@ o.spec('CloudFront', () => {
     o(req.query.getAll('foo')).deepEquals(['bar']);
   });
 
+  o('should be case-insensitive query parameters', () => {
+    const newReq = clone(CloudfrontExample);
+    newReq.Records[0].cf.request.querystring = `?FoO=bar`;
+    const req = new LambdaCloudFrontRequest(newReq, fakeContext, fakeLog);
+    o(req.query.get('foo')).deepEquals('bar');
+    o(req.query.getAll('foo')).deepEquals(['bar']);
+  });
+
   o('should extract all query parameters', () => {
     const newReq = clone(CloudfrontExample);
     newReq.Records[0].cf.request.querystring = `?foo=foo&foo=bar`;
