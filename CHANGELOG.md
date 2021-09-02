@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/linz/lambda-js/compare/v1.0.1...v1.1.0) (2021-09-02)
+
+
+### Features
+
+* **deps:** bump pino from 6.13.0 to 6.13.1 ([#7](https://github.com/linz/lambda-js/issues/7)) ([54fac0c](https://github.com/linz/lambda-js/commit/54fac0c32ac9a81579ed1a22478372e21daf8706))
+* case insensitive query strings ([#17](https://github.com/linz/lambda-js/issues/17)) ([e5fee43](https://github.com/linz/lambda-js/commit/e5fee4304017538216a2ba383410a0bd2921fb93))
+* include the awsRequestId in every log line ([e4a40de](https://github.com/linz/lambda-js/commit/e4a40de4642e22b46faed5c60f44ea3bcd8cb96f))
+* trace a percentage of requests ([0d2e75a](https://github.com/linz/lambda-js/commit/0d2e75a9af070dfa6f67b9e28eafec1b092df42e))
+
+
+
 ## [1.0.1](https://github.com/linz/lambda-js/compare/v1.0.0...v1.0.1) (2021-08-27)
 
 
