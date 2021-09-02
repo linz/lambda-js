@@ -39,7 +39,7 @@ export class LambdaApiGatewayRequest extends LambdaHttpRequest<APIGatewayEvent, 
     if (this.event.multiValueQueryStringParameters == null) return query;
     for (const [key, values] of Object.entries(this.event.multiValueQueryStringParameters)) {
       if (values == null) continue;
-      for (const value of values) query.append(key, value);
+      for (const value of values) query.append(key.toLowerCase(), value);
     }
     return query;
   }

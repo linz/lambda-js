@@ -79,7 +79,11 @@ export abstract class LambdaHttpRequest<
   abstract isBase64Encoded: boolean;
 
   _query: URLSearchParams;
-  /** Query string parameters */
+  /**
+   * Query string parameters
+   *
+   * All query parameters have been normalized into lowercase
+   */
   get query(): URLSearchParams {
     if (this._query == null) this._query = this.loadQueryString();
     return this._query;

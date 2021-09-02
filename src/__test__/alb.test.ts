@@ -38,6 +38,16 @@ o.spec('AlbGateway', () => {
     o(req.query.getAll('api')).deepEquals(['abc123']);
   });
 
+  o('should be case-insensitive query parameters', () => {
+    const newReq = clone(AlbExample);
+    delete newReq.queryStringParameters!['foo'];
+    newReq.queryStringParameters!['FoO'] = 'bar';
+
+    const req = new LambdaAlbRequest(newReq, fakeContext, fakeLog);
+    o(req.query.get('foo')).deepEquals('bar');
+    o(req.query.getAll('foo')).deepEquals(['bar']);
+  });
+
   // ALB events don't seem to handle multiple query parameters
   //   o('should extract all query parameters', () => {
   //     const newReq = clone(ApiGatewayExample);

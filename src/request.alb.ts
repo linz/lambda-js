@@ -36,7 +36,13 @@ export class LambdaAlbRequest extends LambdaHttpRequest<ALBEvent, ALBResult> {
   }
 
   loadQueryString(): URLSearchParams {
-    return new URLSearchParams(this.event.queryStringParameters);
+    const ret = new URLSearchParams();
+    if (this.event.queryStringParameters == null) return ret;
+
+    for (const [key, value] of Object.entries(this.event.queryStringParameters)) {
+      ret.append(key.toLowerCase(), value ?? 'true');
+    }
+    return ret;
   }
 
   get method(): string {
