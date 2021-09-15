@@ -1,8 +1,8 @@
 import { Context } from 'aws-lambda';
 import o from 'ospec';
-import { LambdaApiGatewayRequest } from '../request.api.gateway';
-import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples';
-import { fakeLog } from './log';
+import { LambdaApiGatewayRequest } from '../request.api.gateway.js';
+import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
+import { fakeLog } from './log.js';
 
 o.spec('ApiGateway', () => {
   const fakeContext = {} as Context;

@@ -1,8 +1,8 @@
 import { CloudFrontRequestEvent, Context } from 'aws-lambda';
 import o from 'ospec';
-import { LambdaCloudFrontRequest } from '../request.cloudfront';
-import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples';
-import { fakeLog } from './log';
+import { LambdaCloudFrontRequest } from '../request.cloudfront.js';
+import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
+import { fakeLog } from './log.js';
 
 o.spec('CloudFront', () => {
   const fakeContext = {} as Context;

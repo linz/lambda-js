@@ -1,8 +1,8 @@
 import { Metrics } from '@linzjs/metrics';
 import { Context } from 'aws-lambda';
 import { ulid } from 'ulid';
-import { LogType } from './log';
-import { LambdaResponse } from './response';
+import { LogType } from './log.js';
+import { LambdaResponse } from './response.js';
 
 export function isRecord(x: unknown): x is Record<string, unknown> {
   if (typeof x !== 'object') return false;

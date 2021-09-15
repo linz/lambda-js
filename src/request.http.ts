@@ -9,10 +9,10 @@ import {
 } from 'aws-lambda';
 import * as ulid from 'ulid';
 import { URLSearchParams } from 'url';
-import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header';
-import { LogType } from './log';
-import { LambdaRequest } from './request';
-import { LambdaHttpResponse } from './response.http';
+import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
+import { LogType } from './log.js';
+import { LambdaRequest } from './request.js';
+import { LambdaHttpResponse } from './response.http.js';
 
 export type HttpRequestEvent = ALBEvent | CloudFrontRequestEvent | APIGatewayProxyEvent;
 export type HttpResponse = ALBResult | CloudFrontRequestResult | APIGatewayProxyResultV2;
