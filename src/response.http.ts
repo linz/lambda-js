@@ -1,4 +1,4 @@
-import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header';
+import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
 
 export class LambdaHttpResponse {
   /** Http status code */

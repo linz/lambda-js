@@ -1,8 +1,8 @@
 import { CloudFrontRequestEvent, CloudFrontRequestResult } from 'aws-lambda';
 import { URLSearchParams } from 'url';
-import { isRecord } from './request';
-import { LambdaHttpRequest } from './request.http';
-import { LambdaHttpResponse } from './response.http';
+import { isRecord } from './request.js';
+import { LambdaHttpRequest } from './request.http.js';
+import { LambdaHttpResponse } from './response.http.js';
 
 export class LambdaCloudFrontRequest extends LambdaHttpRequest<CloudFrontRequestEvent, CloudFrontRequestResult> {
   static is(x: unknown): x is CloudFrontRequestEvent {

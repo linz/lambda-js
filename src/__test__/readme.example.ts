@@ -1,7 +1,7 @@
 import { S3Event } from 'aws-lambda';
-import { lf } from '../function';
-import { LambdaRequest } from '../request';
-import { LambdaHttpResponse } from '../response.http';
+import { lf } from '../function.js';
+import { LambdaRequest } from '../request.js';
+import { LambdaHttpResponse } from '../response.http.js';
 
 export async function main(req: LambdaRequest<S3Event>): Promise<void> {
   console.log('foo', req.id);

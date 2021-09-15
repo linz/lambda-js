@@ -1,14 +1,14 @@
 import { Callback, Context, Handler } from 'aws-lambda';
 import pino from 'pino';
-import { LambdaResponse } from './response';
-import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from './header';
-import { LogType } from './log';
-import { LambdaRequest } from './request';
-import { LambdaAlbRequest } from './request.alb';
-import { LambdaApiGatewayRequest } from './request.api.gateway';
-import { LambdaCloudFrontRequest } from './request.cloudfront';
-import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './request.http';
-import { LambdaHttpResponse } from './response.http';
+import { LambdaResponse } from './response.js';
+import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from './header.js';
+import { LogType } from './log.js';
+import { LambdaRequest } from './request.js';
+import { LambdaAlbRequest } from './request.alb.js';
+import { LambdaApiGatewayRequest } from './request.api.gateway.js';
+import { LambdaCloudFrontRequest } from './request.cloudfront.js';
+import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './request.http.js';
+import { LambdaHttpResponse } from './response.http.js';
 
 export interface HttpStatus {
   statusCode: string;

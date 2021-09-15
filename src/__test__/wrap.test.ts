@@ -2,12 +2,12 @@
 import { ALBResult, APIGatewayProxyStructuredResultV2, CloudFrontResultResponse, Context } from 'aws-lambda';
 import o from 'ospec';
 import sinon from 'sinon';
-import { lf } from '../function';
-import { LambdaRequest } from '../request';
-import { LambdaHttpRequest } from '../request.http';
-import { LambdaHttpResponse } from '../response.http';
-import { AlbExample, ApiGatewayExample, CloudfrontExample } from './examples';
-import { fakeLog } from './log';
+import { lf } from '../function.js';
+import { LambdaRequest } from '../request.js';
+import { LambdaHttpRequest } from '../request.http.js';
+import { LambdaHttpResponse } from '../response.http.js';
+import { AlbExample, ApiGatewayExample, CloudfrontExample } from './examples.js';
+import { fakeLog } from './log.js';
 
 function assertAlbResult(x: unknown): asserts x is ALBResult {}
 function assertCloudfrontResult(x: unknown): asserts x is CloudFrontResultResponse {}
