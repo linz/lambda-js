@@ -1,3 +1,17 @@
+# [2.0.0](https://github.com/linz/lambda-js/compare/v1.1.0...v2.0.0) (2021-09-15)
+
+
+### Features
+
+* switch to esm modules ([#25](https://github.com/linz/lambda-js/issues/25)) ([20c1288](https://github.com/linz/lambda-js/commit/20c1288c8d7b525d97ce7bfa26f124cdca0db2b0))
+
+
+### BREAKING CHANGES
+
+* this removes support for commonjs imports
+
+
+
 # [1.1.0](https://github.com/linz/lambda-js/compare/v1.0.1...v1.1.0) (2021-09-02)
 
 
