@@ -59,10 +59,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.0.tgz#87de7af9c231826fdd68ac7258f77c429e0e5fcf"
   integrity sha512-wdppn25U8z/2yiaT6YGquE6X8sSv7hNMWSXYSSU1jGv/yd6XqjXgTDJ8KP4NgjTXfJ3GbRjeeb8RTV7a/VpM+w==
 
-"@linzjs/metrics@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@linzjs/metrics/-/metrics-6.0.0.tgz#fc29e12c74bd176d4b1db1c990589afea55a8491"
-  integrity sha512-3O5VzbcOaPWrBhHUAhnP9+88BjenAb3xP5mXsD/djXgFsGCFhcuTGLBY9+LirFYpy9VKbcNjMiRYsku2lwmV6g==
+"@linzjs/metrics@^6.11.0":
+  version "6.11.0"
+  resolved "https://registry.yarnpkg.com/@linzjs/metrics/-/metrics-6.11.0.tgz#b63ff84da559888d32c1005878d61e95110c4c51"
+  integrity sha512-qfY876oUR5caON173DAneYRqL6IHr0I3MiULKWGZvm5kd40Vo9U1Zn3dEfweECoJg42qIYqwhhE2AoN0jL4f7Q==
 
 "@linzjs/style@^3.1.0":
   version "3.1.0"
