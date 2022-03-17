@@ -39,7 +39,7 @@
     "build/src/**"
   ],
   "dependencies": {
-    "@linzjs/metrics": "^6.0.0",
+    "@linzjs/metrics": "^6.21.1",
     "@types/pino": "^6.3.11",
     "pino": "^7.5.0",
     "ulid": "^2.3.0"
