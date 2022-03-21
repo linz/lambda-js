@@ -21,14 +21,14 @@ o.spec('ApiGateway', () => {
 
   o('should extract methods', () => {
     const req = new LambdaApiGatewayRequest(ApiGatewayExample, fakeContext, fakeLog);
-    o(req.method).equals('POST');
+    o(req.method).equals('GET');
   });
 
   o('should upper case method', () => {
     const newReq = clone(ApiGatewayExample);
-    newReq.httpMethod = 'get';
+    newReq.httpMethod = 'post';
     const req = new LambdaApiGatewayRequest(newReq, fakeContext, fakeLog);
-    o(req.method).equals('GET');
+    o(req.method).equals('POST');
   });
 
   o('should extract query parameters', () => {

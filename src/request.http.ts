@@ -17,12 +17,21 @@ import { LambdaHttpResponse } from './response.http.js';
 export type HttpRequestEvent = ALBEvent | CloudFrontRequestEvent | APIGatewayProxyEvent;
 export type HttpResponse = ALBResult | CloudFrontRequestResult | APIGatewayProxyResultV2;
 
+// TODO these should ideally be validated before being given to the api, should this force a ZOD validation step
+export interface RequestTypes {
+  Params?: unknown;
+  // Body?: unknown;
+  // Querystring?: unknown;
+  // Headers?: unknown;
+}
 export abstract class LambdaHttpRequest<
+  Rt extends RequestTypes = RequestTypes,
   Request extends HttpRequestEvent = HttpRequestEvent,
   Response extends HttpResponse = HttpResponse,
 > extends LambdaRequest<Request, Response> {
   public headers = new Map<string, string>();
   public correlationId: string;
+  public params: Rt['Params'];
 
   private _isHeadersLoaded: boolean;
 
@@ -64,7 +73,7 @@ export abstract class LambdaHttpRequest<
   abstract loadQueryString(): URLSearchParams;
 
   /**
-   * Lower cased HTTP method
+   * Upper cased HTTP method
    * @example 'GET'
    * @example 'POST'
    */

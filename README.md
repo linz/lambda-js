@@ -17,10 +17,28 @@ This repository wraps the default lambda handler so it can be invoked by ALB, AP
 import {lf, LambdaHttpResponse} from '@linzjs/lambda';
 
 // This works for Cloud front, ALB or API Gateway events
-export const handler = lf.http(async (req) => {
-  if (req.method !== 'POST') throw new LambdaHttpResponse(400, 'Invalid method');
-  return new LambdaHttpResponse(200, 'Ok');
+export const handler = lf.http();
+
+handler.router.get('/v1/ping', () => new LambdaHttpResponse(200, 'Ok'));
+handler.router.get<{ Params: { style: string } }>(
+  '/v1/style/:style.json',
+  (req) => new LambdaHttpResponse(200, 'Style: ' + req.params.style),
+);
+
+// Handle all requests
+handler.router.all('*', () => new LambdaHttpResponse(404, 'Not found'));
+
+
+// create middleware to validate api key on all requests
+handler.router.all('*', (req) => {
+  const isApiValid = validateApiKey(req.query.get('api'));
+  // Bail early
+  if (!isApiValid) return new LambdaHttpResponse(400, 'Invalid api key');
+
+  // Continue
+  return;
 });
+
 ```
 
 #### Lambda
@@ -75,11 +93,11 @@ function doRequest(req) {
 
 This can be overridden at either the wrapper
 ```typescript
-export const handler = LambdaFunction.wrap(doRequest, myOwnLogger)
+export const handler = lf.wrap(doRequest, myOwnLogger)
 ```
 
 of set a different default logger
 ```typescript
-LambdaFunction.logger = myOwnLogger;
-export const handler = LambdaFunction.wrap(doRequest)
+lf.logger = myOwnLogger;
+export const handler = lf.wrap(doRequest)
 ```

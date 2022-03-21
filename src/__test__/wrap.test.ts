@@ -6,8 +6,9 @@ import { lf } from '../function.js';
 import { LambdaRequest } from '../request.js';
 import { LambdaHttpRequest } from '../request.http.js';
 import { LambdaHttpResponse } from '../response.http.js';
-import { AlbExample, ApiGatewayExample, CloudfrontExample } from './examples.js';
+import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
 import { fakeLog } from './log.js';
+import { HttpMethods } from '../router.js';
 
 function assertAlbResult(x: unknown): asserts x is ALBResult {}
 function assertCloudfrontResult(x: unknown): asserts x is CloudFrontResultResponse {}
@@ -29,8 +30,71 @@ o.spec('LambdaWrap', () => {
     fakeLog.logs = [];
   });
 
+  o('should handle middleware', async () => {
+    const fn = lf.http(fakeLog);
+    fn.router.all('*', (req): LambdaHttpResponse | void => {
+      if (req.path.includes('fail')) return new LambdaHttpResponse(500, 'Failed');
+    });
+    fn.router.get('/v1/ping', () => new LambdaHttpResponse(200, 'Ok'));
+
+    const newReq = clone(ApiGatewayExample);
+    newReq.path = '/v1/ping';
+    const ret = await new Promise((resolve) => fn(newReq, fakeContext, (a, b) => resolve(b)));
+    assertAlbResult(ret);
+
+    o(ret.statusCode).equals(200);
+
+    newReq.path = '/v1/ping/fail';
+    const retB = await new Promise((resolve) => fn(newReq, fakeContext, (a, b) => resolve(b)));
+    assertAlbResult(retB);
+    o(retB.statusCode).equals(500);
+  });
+
+  o('should wrap all http methods', async () => {
+    const fn = lf.http(fakeLog);
+    const methods: string[] = [];
+
+    function bind(r: string) {
+      return (): LambdaHttpResponse => {
+        methods.push(r.toUpperCase());
+        return new LambdaHttpResponse(200, 'Ok');
+      };
+    }
+    fn.router.get('*', bind('get'));
+    fn.router.delete('*', bind('delete'));
+    fn.router.head('*', bind('head'));
+    fn.router.options('*', bind('options'));
+    fn.router.post('*', bind('post'));
+    fn.router.patch('*', bind('patch'));
+    fn.router.put('*', bind('put'));
+
+    const headers: Record<HttpMethods, number> = {
+      DELETE: 1,
+      ALL: 0,
+      GET: 1,
+      OPTIONS: 1,
+      HEAD: 1,
+      POST: 1,
+      PATCH: 1,
+      PUT: 1,
+    };
+
+    const requests = Object.entries(headers)
+      .filter((f) => f[1] === 1)
+      .map((f) => f[0]);
+
+    for (const req of requests) {
+      const newReq = clone(ApiGatewayExample);
+      newReq.httpMethod = req;
+      await new Promise((resolve) => fn(newReq, fakeContext, (a, b) => resolve(b)));
+    }
+
+    o(methods).deepEquals(requests);
+  });
+
   o('should log a metalog at the end of the request', async () => {
-    const fn = lf.http(fakeLambda, fakeLog);
+    const fn = lf.http(fakeLog);
+    fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     await new Promise((resolve) => fn(AlbExample, fakeContext, (a, b) => resolve(b)));
 
     o(fakeLog.logs.length).equals(1);
@@ -39,7 +103,7 @@ o.spec('LambdaWrap', () => {
     o(firstLog['@type']).equals('report');
     o(typeof firstLog['duration'] === 'number').equals(true);
     o(firstLog['status']).equals(200);
-    o(firstLog['method']).equals('POST');
+    o(firstLog['method']).equals('GET');
     o(firstLog['path']).equals('/v1/tiles/aerial/EPSG:3857/6/3/41.json');
     o(firstLog['id']).equals(requests[0].id);
     o(firstLog['setTest']).equals(requests[0].id);
@@ -47,7 +111,8 @@ o.spec('LambdaWrap', () => {
   });
 
   o('should respond to alb events', async () => {
-    const fn = lf.http(fakeLambda, fakeLog);
+    const fn = lf.http(fakeLog);
+    fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     const ret = await new Promise((resolve) => fn(AlbExample, fakeContext, (a, b) => resolve(b)));
 
     assertAlbResult(ret);
@@ -64,7 +129,8 @@ o.spec('LambdaWrap', () => {
   });
 
   o('should respond to cloudfront events', async () => {
-    const fn = lf.http(fakeLambda);
+    const fn = lf.http(fakeLog);
+    fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     const ret = await new Promise((resolve) => fn(CloudfrontExample, fakeContext, (a, b) => resolve(b)));
 
     assertCloudfrontResult(ret);
@@ -79,7 +145,8 @@ o.spec('LambdaWrap', () => {
   });
 
   o('should respond to api gateway events', async () => {
-    const fn = lf.http(fakeLambda);
+    const fn = lf.http(fakeLog);
+    fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
 
     assertsApiGatewayResult(ret);
@@ -94,8 +161,9 @@ o.spec('LambdaWrap', () => {
   });
 
   o('should handle http exceptions', async () => {
-    const fn = lf.http(() => {
-      throw new Error('Fake');
+    const fn = lf.http(fakeLog);
+    fn.router.all('*', () => {
+      throw new Error('Error');
     });
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
 
@@ -152,7 +220,8 @@ o.spec('LambdaWrap', () => {
   o('should disable "server" header if no server name set', async () => {
     const serverName = lf.ServerName;
     lf.ServerName = null;
-    const fn = lf.http(fakeLambda);
+    const fn = lf.http();
+    fn.router.all('*', fakeLambda);
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
 
     lf.ServerName = serverName;
