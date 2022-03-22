@@ -22,14 +22,14 @@ o.spec('AlbGateway', () => {
 
   o('should extract methods', () => {
     const req = new LambdaAlbRequest(AlbExample, fakeContext, fakeLog);
-    o(req.method).equals('POST');
+    o(req.method).equals('GET');
   });
 
   o('should upper case method', () => {
     const newReq = clone(AlbExample);
-    newReq.httpMethod = 'get';
+    newReq.httpMethod = 'post';
     const req = new LambdaAlbRequest(newReq, fakeContext, fakeLog);
-    o(req.method).equals('GET');
+    o(req.method).equals('POST');
   });
 
   o('should extract query parameters', () => {

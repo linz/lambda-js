@@ -9,6 +9,7 @@ import { LambdaApiGatewayRequest } from './request.api.gateway.js';
 import { LambdaCloudFrontRequest } from './request.cloudfront.js';
 import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
+import { Router } from './router.js';
 
 export interface HttpStatus {
   statusCode: string;
@@ -47,7 +48,7 @@ async function runFunction<T extends LambdaRequest, K>(
   }
 }
 
-async function execute<T extends LambdaRequest, K>(
+export async function execute<T extends LambdaRequest, K>(
   req: T,
   fn: (req: T) => K | Promise<K>,
 ): Promise<K | LambdaHttpResponse> {
@@ -160,15 +161,15 @@ export class lf {
     return handler;
   }
   /**
-   *  Wrap a lambda function to provide extra functionality
+   *  Create a route lambda function to provide extra functionality
    *
    * - Log metadata about the call on every request
    * - Catch errors and log them before exiting
    *
-   * @param fn Function to wrap
    * @param logger optional logger to use for the request @see lf.Logger
    */
-  public static http(fn: LambdaWrappedFunctionHttp, logger?: LogType): LambdaHandler<HttpRequestEvent, HttpResponse> {
+  public static http(logger?: LogType): LambdaHandler<HttpRequestEvent, HttpResponse> & { router: Router } {
+    const router = new Router();
     function httpHandler(event: HttpRequestEvent, context: Context, callback: Callback<HttpResponse>): void {
       const req = lf.request(event, context, logger ?? lf.Logger);
 
@@ -180,7 +181,7 @@ export class lf {
       req.set('method', req.method);
       req.set('path', req.path);
 
-      execute(req, fn).then((res: LambdaHttpResponse) => {
+      router.handle(req).then((res: LambdaHttpResponse) => {
         // Do not cache http 500 errors
         if (res.status === 500) res.header(HttpHeader.CacheControl, 'no-store');
         res.header(HttpHeaderRequestId.RequestId, req.id);
@@ -198,6 +199,7 @@ export class lf {
         callback(null, req.toResponse(res));
       });
     }
+    httpHandler.router = router;
     return httpHandler;
   }
 }

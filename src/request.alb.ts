@@ -4,7 +4,7 @@ import { isRecord } from './request.js';
 import { LambdaHttpRequest } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
 
-export class LambdaAlbRequest extends LambdaHttpRequest<ALBEvent, ALBResult> {
+export class LambdaAlbRequest<T extends Record<string, string>> extends LambdaHttpRequest<T, ALBEvent, ALBResult> {
   static is(x: unknown): x is ALBEvent {
     return isRecord(x) && isRecord(x['requestContext']) && isRecord(x['requestContext']['elb']);
   }

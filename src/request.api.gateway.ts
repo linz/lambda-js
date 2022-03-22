@@ -4,7 +4,11 @@ import { isRecord } from './request.js';
 import { LambdaHttpRequest } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
 
-export class LambdaApiGatewayRequest extends LambdaHttpRequest<APIGatewayEvent, APIGatewayProxyResultV2> {
+export class LambdaApiGatewayRequest<T extends Record<string, string>> extends LambdaHttpRequest<
+  T,
+  APIGatewayEvent,
+  APIGatewayProxyResultV2
+> {
   static is(x: unknown): x is APIGatewayEvent {
     return isRecord(x) && isRecord(x['requestContext']) && typeof x['requestContext']['apiId'] === 'string';
   }

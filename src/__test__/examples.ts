@@ -4,8 +4,8 @@ import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent } from 'aws-lamb
 export const ApiGatewayExample: APIGatewayProxyEvent = {
   body: 'eyJ0ZXN0IjoiYm9keSJ9',
   resource: '/{proxy+}',
-  path: '/path/to/resource',
-  httpMethod: 'POST',
+  path: '/v1/tiles/aerial/EPSG:3857/6/3/41.json',
+  httpMethod: 'GET',
   isBase64Encoded: true,
   queryStringParameters: {
     foo: 'bar',
@@ -104,7 +104,7 @@ export const CloudfrontExample: CloudFrontRequestEvent = {
         },
         request: {
           body: undefined,
-          uri: '/test',
+          uri: '/v1/tiles/aerial/EPSG:3857/6/3/41.json',
           method: 'GET',
           clientIp: '2001:cdba::3257:9652',
           querystring: '?foo=bar',
@@ -129,7 +129,7 @@ export const AlbExample: ALBEvent = {
         'arn:aws:elasticloadbalancing:ap-southeast-2:000000000:targetgroup/Serve-LBHtt-1OHAJAJC2EOCV/c7cdb5edeadbeefa9',
     },
   },
-  httpMethod: 'POST',
+  httpMethod: 'GET',
   path: '/v1/tiles/aerial/EPSG:3857/6/3/41.json',
   queryStringParameters: {
     api: 'abc123',

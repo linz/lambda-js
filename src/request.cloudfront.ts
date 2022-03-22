@@ -4,7 +4,11 @@ import { isRecord } from './request.js';
 import { LambdaHttpRequest } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
 
-export class LambdaCloudFrontRequest extends LambdaHttpRequest<CloudFrontRequestEvent, CloudFrontRequestResult> {
+export class LambdaCloudFrontRequest<T extends Record<string, string>> extends LambdaHttpRequest<
+  T,
+  CloudFrontRequestEvent,
+  CloudFrontRequestResult
+> {
   static is(x: unknown): x is CloudFrontRequestEvent {
     if (!isRecord(x)) return false;
     if (!Array.isArray(x['Records'])) return false;
