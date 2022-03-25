@@ -1,4 +1,4 @@
-import { execute } from './function.js';
+import { execute } from '../function.js';
 import { LambdaHttpRequest, RequestTypes } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
 

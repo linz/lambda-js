@@ -1,4 +1,4 @@
-import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
+import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from '../header.js';
 
 export class LambdaHttpResponse {
   /** Http status code */
@@ -12,6 +12,10 @@ export class LambdaHttpResponse {
 
   static is(x: unknown): x is LambdaHttpResponse {
     return x instanceof LambdaHttpResponse;
+  }
+
+  static ok(code = 200, status = 'Ok'): LambdaHttpResponse {
+    return new LambdaHttpResponse(code, status);
   }
 
   public constructor(status: number, description: string, headers?: Record<string, string>) {
@@ -37,14 +41,16 @@ export class LambdaHttpResponse {
   }
 
   /** Set a JSON output */
-  json(obj: Record<string, unknown>): void {
+  json(obj: Record<string, unknown>): LambdaHttpResponse {
     this.buffer(JSON.stringify(obj), ApplicationJson);
+    return this;
   }
 
   /** Set the output type and the Content-Type header */
-  buffer(buf: Buffer | string, contentType = ApplicationJson): void {
+  buffer(buf: Buffer | string, contentType = ApplicationJson): LambdaHttpResponse {
     this.header(HttpHeader.ContentType, contentType);
     this._body = buf;
+    return this;
   }
 
   get body(): string {

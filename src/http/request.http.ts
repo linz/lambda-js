@@ -9,9 +9,9 @@ import {
 } from 'aws-lambda';
 import * as ulid from 'ulid';
 import { URLSearchParams } from 'url';
-import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
-import { LogType } from './log.js';
-import { LambdaRequest } from './request.js';
+import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from '../header.js';
+import { LogType } from '../log.js';
+import { LambdaRequest } from '../request.js';
 import { LambdaHttpResponse } from './response.http.js';
 
 export type HttpRequestEvent = ALBEvent | CloudFrontRequestEvent | APIGatewayProxyEvent;

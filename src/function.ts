@@ -4,12 +4,12 @@ import { LambdaResponse } from './response.js';
 import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from './header.js';
 import { LogType } from './log.js';
 import { LambdaRequest } from './request.js';
-import { LambdaAlbRequest } from './request.alb.js';
-import { LambdaApiGatewayRequest } from './request.api.gateway.js';
-import { LambdaCloudFrontRequest } from './request.cloudfront.js';
-import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './request.http.js';
-import { LambdaHttpResponse } from './response.http.js';
-import { Router } from './router.js';
+import { LambdaAlbRequest } from './http/request.alb.js';
+import { LambdaApiGatewayRequest } from './http/request.api.gateway.js';
+import { LambdaCloudFrontRequest } from './http/request.cloudfront.js';
+import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './http/request.http.js';
+import { LambdaHttpResponse } from './http/response.http.js';
+import { Router } from './http/router.js';
 
 export interface HttpStatus {
   statusCode: string;

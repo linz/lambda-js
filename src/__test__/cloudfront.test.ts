@@ -1,6 +1,6 @@
 import { CloudFrontRequestEvent, Context } from 'aws-lambda';
 import o from 'ospec';
-import { LambdaCloudFrontRequest } from '../request.cloudfront.js';
+import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
 import { fakeLog } from './log.js';
 

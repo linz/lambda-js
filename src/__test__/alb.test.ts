@@ -1,6 +1,6 @@
 import { Context } from 'aws-lambda';
 import o from 'ospec';
-import { LambdaAlbRequest } from '../request.alb.js';
+import { LambdaAlbRequest } from '../http/request.alb.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
 import { fakeLog } from './log.js';
 
