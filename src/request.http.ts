@@ -59,7 +59,7 @@ export abstract class LambdaHttpRequest<
       throw new Error(`Invalid Content-Type: "${this.header('content-type')}"`);
     }
 
-    if (this.body == null) throw new Error('Cannot parse empty body as JSONN');
+    if (this.body == null) throw new Error('Cannot parse empty body as JSON');
     try {
       if (this.isBase64Encoded) return JSON.parse(Buffer.from(this.body ?? '', 'base64').toString());
       return JSON.parse(this.body);
