@@ -41,7 +41,7 @@
   ],
   "dependencies": {
     "@linzjs/metrics": "^6.21.1",
-    "pino": "^7.9.1",
+    "pino": "^7.10.0",
     "ulid": "^2.3.0"
   }
 }
