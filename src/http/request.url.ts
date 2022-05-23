@@ -75,6 +75,9 @@ export class LambdaUrlRequest<T extends Record<string, string>> extends LambdaHt
   }
 
   static is(x: unknown): x is UrlEvent {
-    return isRecord(x) && isRecord(x['requestContext']) && isRecord(x['requestContext']['http']);
+    if (!isRecord(x)) return false;
+    if (!isRecord(x['requestContext'])) return false;
+    if (!isRecord(x['requestContext']['http'])) return false;
+    return true;
   }
 }

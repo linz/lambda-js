@@ -10,7 +10,12 @@ export class LambdaApiGatewayRequest<T extends Record<string, string>> extends L
   APIGatewayProxyResultV2
 > {
   static is(x: unknown): x is APIGatewayEvent {
-    return isRecord(x) && isRecord(x['requestContext']) && typeof x['requestContext']['apiId'] === 'string';
+    if (!isRecord(x)) return false;
+    if (!isRecord(x['requestContext'])) return false;
+    if (typeof x['requestContext']['apiId'] !== 'string') return false;
+    if (typeof x['requestContext']['resourceId'] !== 'string') return false;
+    if (typeof x['requestContext']['httpMethod'] !== 'string') return false;
+    return true;
   }
 
   toResponse(res: LambdaHttpResponse): APIGatewayProxyResultV2 {

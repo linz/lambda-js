@@ -6,6 +6,7 @@ import { fakeLog } from './log.js';
 
 o.spec('CloudFront', () => {
   const fakeContext = {} as Context;
+
   o('should match the event', () => {
     o(LambdaCloudFrontRequest.is(CloudfrontExample)).equals(true);
     o(LambdaCloudFrontRequest.is(AlbExample)).equals(false);

@@ -1,15 +1,17 @@
 import { Context } from 'aws-lambda';
 import o from 'ospec';
 import { LambdaApiGatewayRequest } from '../http/request.api.gateway.js';
-import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
+import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 
 o.spec('ApiGateway', () => {
   const fakeContext = {} as Context;
+
   o('should match the event', () => {
     o(LambdaApiGatewayRequest.is(CloudfrontExample)).equals(false);
     o(LambdaApiGatewayRequest.is(AlbExample)).equals(false);
     o(LambdaApiGatewayRequest.is(ApiGatewayExample)).equals(true);
+    o(LambdaApiGatewayRequest.is(UrlExample)).equals(false);
   });
 
   o('should extract headers', () => {
