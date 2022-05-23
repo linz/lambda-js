@@ -1,3 +1,13 @@
+<a name="3.0.1"></a>
+## [3.0.1](https://github.com/linz/lambda-js/compare/v3.0.0...v3.0.1) (2022-05-23)
+
+
+### Bug Fixes
+
+* ensure the header enums are exported correctly ([b1a2b68](https://github.com/linz/lambda-js/commit/b1a2b68))
+
+
+
 <a name="3.0.0"></a>
 # [3.0.0](https://github.com/linz/lambda-js/compare/v2.0.0...v3.0.0) (2022-05-23)
 
