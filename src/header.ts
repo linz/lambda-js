@@ -1,7 +1,7 @@
 export const ApplicationJson = 'application/json';
 
 /** Common http headers */
-export const enum HttpHeader {
+export enum HttpHeader {
   CacheControl = 'Cache-Control',
   ContentEncoding = 'Content-Encoding',
   ContentType = 'Content-Type',
@@ -13,12 +13,12 @@ export const enum HttpHeader {
 }
 
 /** Amazon specific headers */
-export const enum HttpHeaderAmazon {
+export enum HttpHeaderAmazon {
   CloudfrontId = 'X-Amz-Cf-Id',
   TraceId = 'X-Amzn-Trace-Id',
 }
 
-export const enum HttpHeaderRequestId {
+export enum HttpHeaderRequestId {
   CorrelationId = 'X-LINZ-Correlation-Id',
   RequestId = 'X-LINZ-Request-Id',
 }
