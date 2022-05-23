@@ -1,4 +1,4 @@
-import { LambdaAlbRequest } from '../request.alb.js';
+import { LambdaAlbRequest } from '../http/request.alb.js';
 import { AlbExample, clone } from './examples.js';
 import { fakeLog } from './log.js';
 import o from 'ospec';

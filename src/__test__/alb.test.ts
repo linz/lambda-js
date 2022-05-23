@@ -1,7 +1,7 @@
 import { Context } from 'aws-lambda';
 import o from 'ospec';
-import { LambdaAlbRequest } from '../request.alb.js';
-import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
+import { LambdaAlbRequest } from '../http/request.alb.js';
+import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 
 o.spec('AlbGateway', () => {
@@ -11,6 +11,7 @@ o.spec('AlbGateway', () => {
     o(LambdaAlbRequest.is(ApiGatewayExample)).equals(false);
     o(LambdaAlbRequest.is(CloudfrontExample)).equals(false);
     o(LambdaAlbRequest.is(AlbExample)).equals(true);
+    o(LambdaAlbRequest.is(UrlExample)).equals(false);
   });
 
   o('should extract headers', () => {

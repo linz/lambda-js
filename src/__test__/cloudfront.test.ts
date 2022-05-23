@@ -1,7 +1,7 @@
 import { CloudFrontRequestEvent, Context } from 'aws-lambda';
 import o from 'ospec';
-import { LambdaCloudFrontRequest } from '../request.cloudfront.js';
-import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
+import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
+import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 
 o.spec('CloudFront', () => {
@@ -10,6 +10,7 @@ o.spec('CloudFront', () => {
     o(LambdaCloudFrontRequest.is(CloudfrontExample)).equals(true);
     o(LambdaCloudFrontRequest.is(AlbExample)).equals(false);
     o(LambdaCloudFrontRequest.is(ApiGatewayExample)).equals(false);
+    o(LambdaCloudFrontRequest.is(UrlExample)).equals(false);
   });
 
   o('should extract headers', () => {

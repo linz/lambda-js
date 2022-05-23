@@ -1,6 +1,6 @@
 import { CloudFrontRequestEvent, CloudFrontRequestResult } from 'aws-lambda';
 import { URLSearchParams } from 'url';
-import { isRecord } from './request.js';
+import { isRecord } from '../request.js';
 import { LambdaHttpRequest } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
 

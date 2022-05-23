@@ -4,11 +4,11 @@ import o from 'ospec';
 import sinon from 'sinon';
 import { lf } from '../function.js';
 import { LambdaRequest } from '../request.js';
-import { LambdaHttpRequest } from '../request.http.js';
-import { LambdaHttpResponse } from '../response.http.js';
+import { LambdaHttpRequest } from '../http/request.http.js';
+import { LambdaHttpResponse } from '../http/response.http.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
 import { fakeLog } from './log.js';
-import { HttpMethods } from '../router.js';
+import { HttpMethods } from '../http/router.js';
 
 function assertAlbResult(x: unknown): asserts x is ALBResult {}
 function assertCloudfrontResult(x: unknown): asserts x is CloudFrontResultResponse {}

@@ -4,12 +4,13 @@ import { LambdaResponse } from './response.js';
 import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from './header.js';
 import { LogType } from './log.js';
 import { LambdaRequest } from './request.js';
-import { LambdaAlbRequest } from './request.alb.js';
-import { LambdaApiGatewayRequest } from './request.api.gateway.js';
-import { LambdaCloudFrontRequest } from './request.cloudfront.js';
-import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './request.http.js';
-import { LambdaHttpResponse } from './response.http.js';
-import { Router } from './router.js';
+import { LambdaAlbRequest } from './http/request.alb.js';
+import { LambdaApiGatewayRequest } from './http/request.api.gateway.js';
+import { LambdaCloudFrontRequest } from './http/request.cloudfront.js';
+import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './http/request.http.js';
+import { LambdaHttpResponse } from './http/response.http.js';
+import { Router } from './http/router.js';
+import { LambdaUrlRequest } from './http/request.function.js';
 
 export interface HttpStatus {
   statusCode: string;
@@ -119,6 +120,7 @@ export class lf {
 
   static request(req: HttpRequestEvent, ctx: Context, log: LogType): LambdaHttpRequest {
     if (LambdaAlbRequest.is(req)) return new LambdaAlbRequest(req, ctx, log);
+    if (LambdaUrlRequest.is(req)) return new LambdaUrlRequest(req, ctx, log);
     if (LambdaApiGatewayRequest.is(req)) return new LambdaApiGatewayRequest(req, ctx, log);
     if (LambdaCloudFrontRequest.is(req)) return new LambdaCloudFrontRequest(req, ctx, log);
     throw new Error('Request is not a a ALB, ApiGateway or Cloudfront event');

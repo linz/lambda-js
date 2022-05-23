@@ -1,6 +1,6 @@
 import { APIGatewayEvent, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { URLSearchParams } from 'url';
-import { isRecord } from './request.js';
+import { isRecord } from '../request.js';
 import { LambdaHttpRequest } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
 
@@ -17,12 +17,12 @@ export class LambdaApiGatewayRequest<T extends Record<string, string>> extends L
     return {
       statusCode: res.status,
       body: res.body,
-      headers: this.toHeaders(res),
+      headers: LambdaApiGatewayRequest.toHeaders(res),
       isBase64Encoded: res.isBase64Encoded,
     };
   }
 
-  toHeaders(res: LambdaHttpResponse): Record<string, string> | undefined {
+  static toHeaders(res: LambdaHttpResponse): Record<string, string> | undefined {
     if (res.headers.size === 0) return undefined;
 
     const obj: Record<string, string> = {};
