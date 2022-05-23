@@ -1,7 +1,7 @@
 # Lambda wrapper @linzjs/lambda
 ### _A minimal lambda wrapper for LINZ Javascript lambda function development_
 
-* Automatically chooses the correct HTTP output event format based on input event (API Gateway, ALB or Cloudfront)
+* Automatically chooses the correct HTTP output event format based on input event (API Gateway, ALB, FunctionURL or Cloudfront)
 * Generates a request id for every request using a [ULID](https://github.com/ulid/spec) 
 * Automatically Logs the correlationId if one is provided to the function.
 * Logs a meta log at the end of the request `@type: "report"`
@@ -16,7 +16,7 @@ This repository wraps the default lambda handler so it can be invoked by ALB, AP
 ```typescript
 import {lf, LambdaHttpResponse} from '@linzjs/lambda';
 
-// This works for Cloud front, ALB or API Gateway events
+// This works for Cloudfront, FunctionURL, ALB or API Gateway events
 export const handler = lf.http();
 
 handler.router.get('/v1/ping', () => new LambdaHttpResponse(200, 'Ok'));
@@ -70,6 +70,8 @@ req.timer.start('some:event');
 // Do Work
 const duration = req.timer.end('some:event');
 ```
+
+TODO: this should eventually be replaced by open telemetry spans
 
 
 ### Metalog
