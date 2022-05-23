@@ -1,6 +1,6 @@
 import 'source-map-support/register.js';
 import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent } from 'aws-lambda';
-import { UrlEvent } from '../http/request.function';
+import { UrlEvent } from '../http/request.url';
 
 export const ApiGatewayExample: APIGatewayProxyEvent = {
   body: 'eyJ0ZXN0IjoiYm9keSJ9',

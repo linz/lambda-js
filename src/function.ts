@@ -10,7 +10,7 @@ import { LambdaCloudFrontRequest } from './http/request.cloudfront.js';
 import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './http/request.http.js';
 import { LambdaHttpResponse } from './http/response.http.js';
 import { Router } from './http/router.js';
-import { LambdaUrlRequest } from './http/request.function.js';
+import { LambdaUrlRequest } from './http/request.url.js';
 
 export interface HttpStatus {
   statusCode: string;

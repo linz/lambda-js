@@ -12,7 +12,7 @@ import { URLSearchParams } from 'url';
 import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from '../header.js';
 import { LogType } from '../log.js';
 import { LambdaRequest } from '../request.js';
-import { UrlEvent, UrlResult } from './request.function.js';
+import { UrlEvent, UrlResult } from './request.url.js';
 import { LambdaHttpResponse } from './response.http.js';
 
 export type HttpRequestEvent = ALBEvent | CloudFrontRequestEvent | APIGatewayProxyEvent | UrlEvent;

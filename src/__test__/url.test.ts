@@ -1,6 +1,6 @@
 import { Context } from 'aws-lambda';
 import o from 'ospec';
-import { LambdaUrlRequest } from '../http/request.function.js';
+import { LambdaUrlRequest } from '../http/request.url.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 
