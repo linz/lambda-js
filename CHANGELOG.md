@@ -1,3 +1,25 @@
+<a name="3.0.0"></a>
+# [3.0.0](https://github.com/linz/lambda-js/compare/v2.0.0...v3.0.0) (2022-05-23)
+
+
+### Bug Fixes
+
+* ensure apigateway does not parse a function url ([3b7a2eb](https://github.com/linz/lambda-js/commit/3b7a2eb))
+
+
+### Features
+
+* add itty router for http requests ([#122](https://github.com/linz/lambda-js/issues/122)) ([bf79b01](https://github.com/linz/lambda-js/commit/bf79b01))
+* support function urls ([#147](https://github.com/linz/lambda-js/issues/147)) ([1b15d8c](https://github.com/linz/lambda-js/commit/1b15d8c))
+* **deps:** bump pino from 6.13.1 to 7.5.0 ([#70](https://github.com/linz/lambda-js/issues/70)) ([2dcd90d](https://github.com/linz/lambda-js/commit/2dcd90d))
+
+
+### BREAKING CHANGES
+
+* this removes lf.http and makes it return a router, if you want to route all requests use `handler.router.all('*', fn)` to restore previous behaviour
+
+
+
 # [2.0.0](https://github.com/linz/lambda-js/compare/v1.1.0...v2.0.0) (2021-09-15)
 
 
