@@ -1,5 +1,6 @@
 import 'source-map-support/register.js';
 import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent } from 'aws-lambda';
+import { UrlEvent } from '../http/request.function';
 
 export const ApiGatewayExample: APIGatewayProxyEvent = {
   body: 'eyJ0ZXN0IjoiYm9keSJ9',
@@ -152,6 +153,43 @@ export const AlbExample: ALBEvent = {
   },
   body: Buffer.from(JSON.stringify({ status: 'ok' })).toString('base64'),
   isBase64Encoded: true,
+};
+
+export const UrlExample: UrlEvent = {
+  version: '2.0',
+  routeKey: '$default',
+  rawPath: '/v1/🦄/🌈/🦄.json',
+  rawQueryString: '%F0%9F%A6%84=abc123',
+  headers: {
+    'x-amzn-trace-id': 'Root=1-624e71a0-114297900a437c050c74f1fe',
+    'x-forwarded-proto': 'https',
+    host: 'fakeId.lambda-url.ap-southeast-2.on.aws',
+    'x-forwarded-port': '443',
+    'x-forwarded-for': '10.88.254.254',
+    'accept-encoding': 'br,gzip',
+    'x-amz-cf-id': '5jJe5RyAHtE6OmIFkedddTRlFpvHYZvGIwoWNEm9YJ0OUHOFVET_Pw==',
+    'user-agent': 'Amazon CloudFront',
+    via: '2.0 db2406d2a95ec212c318a2e2518f9244.cloudfront.net (CloudFront)',
+  },
+  requestContext: {
+    accountId: 'anonymous',
+    apiId: 'fakeId',
+    domainName: 'fakeId.lambda-url.ap-southeast-2.on.aws',
+    domainPrefix: 'fakeId',
+    http: {
+      method: 'GET',
+      path: '/v1/🦄/🌈/🦄.json',
+      protocol: 'HTTP/1.1',
+      sourceIp: '64.252.109.40',
+      userAgent: 'Amazon CloudFront',
+    },
+    requestId: '6ffbc360-d84e-463c-a112-dcc6279cb4bb',
+    routeKey: '$default',
+    stage: '$default',
+    time: '07/Apr/2022:05:07:44 +0000',
+    timeEpoch: 1649308064171,
+  },
+  isBase64Encoded: false,
 };
 
 export function clone<T>(c: T): T {
