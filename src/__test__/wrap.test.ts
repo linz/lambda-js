@@ -6,13 +6,15 @@ import { lf } from '../function.js';
 import { LambdaRequest } from '../request.js';
 import { LambdaHttpRequest } from '../http/request.http.js';
 import { LambdaHttpResponse } from '../http/response.http.js';
-import { AlbExample, ApiGatewayExample, clone, CloudfrontExample } from './examples.js';
+import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 import { HttpMethods } from '../http/router.js';
+import { UrlResult } from '../http/request.url.js';
 
 function assertAlbResult(x: unknown): asserts x is ALBResult {}
 function assertCloudfrontResult(x: unknown): asserts x is CloudFrontResultResponse {}
 function assertsApiGatewayResult(x: unknown): asserts x is APIGatewayProxyStructuredResultV2 {}
+function assertsUrlResult(x: unknown): asserts x is UrlResult {}
 
 o.spec('LambdaWrap', () => {
   const fakeContext = {} as Context;
@@ -158,6 +160,35 @@ o.spec('LambdaWrap', () => {
     o(body.message).equals('ok');
     o(body.status).equals(200);
     o(body.id).equals(requests[0].id);
+  });
+
+  o('should respond to function url events', async () => {
+    const fn = lf.http(fakeLog);
+    const req = clone(UrlExample);
+    req.rawPath = '/v1/tiles/aerial/EPSG:3857/6/3/41.json';
+    fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
+    const ret = await new Promise((resolve) => fn(req, fakeContext, (a, b) => resolve(b)));
+
+    assertsUrlResult(ret);
+    o(ret.statusCode).equals(200);
+    o(ret.isBase64Encoded).equals(false);
+    o(ret.headers?.['content-type']).deepEquals('application/json');
+
+    const body = JSON.parse(ret.body ?? '');
+    o(body.message).equals('ok');
+    o(body.status).equals(200);
+    o(body.id).equals(requests[0].id);
+  });
+
+  o('should handle thrown http responses', async () => {
+    const fn = lf.http(fakeLog);
+    fn.router.all('*', () => {
+      throw new LambdaHttpResponse(400, 'Error');
+    });
+    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
+
+    assertsUrlResult(ret);
+    o(ret.statusCode).equals(400);
   });
 
   o('should handle http exceptions', async () => {

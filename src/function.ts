@@ -33,7 +33,7 @@ const hash = process.env.GIT_HASH;
 const versionInfo = { version, hash };
 
 /** Run the request catching any errors */
-async function runFunction<T extends LambdaRequest, K>(
+export async function runFunction<T extends LambdaRequest, K>(
   req: T,
   fn: (req: T) => K | Promise<K>,
 ): Promise<K | LambdaHttpResponse> {
