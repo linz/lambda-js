@@ -1,3 +1,13 @@
+<a name="3.1.0"></a>
+# [3.1.0](https://github.com/linz/lambda-js/compare/v3.0.1...v3.1.0) (2022-05-25)
+
+
+### Features
+
+* add hooks to before and after requests ([#149](https://github.com/linz/lambda-js/issues/149)) ([627e391](https://github.com/linz/lambda-js/commit/627e391))
+
+
+
 <a name="3.0.1"></a>
 ## [3.0.1](https://github.com/linz/lambda-js/compare/v3.0.0...v3.0.1) (2022-05-23)
 
