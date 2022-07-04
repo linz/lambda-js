@@ -1,3 +1,13 @@
+<a name="3.1.1"></a>
+## [3.1.1](https://github.com/linz/lambda-js/compare/v3.1.0...v3.1.1) (2022-07-04)
+
+
+### Bug Fixes
+
+* support request bodies in function urls ([3660ed1](https://github.com/linz/lambda-js/commit/3660ed1))
+
+
+
 <a name="3.1.0"></a>
 # [3.1.0](https://github.com/linz/lambda-js/compare/v3.0.1...v3.1.0) (2022-05-25)
 
