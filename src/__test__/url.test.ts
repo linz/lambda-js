@@ -46,5 +46,17 @@ o.spec('FunctionUrl', () => {
     const req = new LambdaUrlRequest(UrlExample, fakeContext, fakeLog);
     o(req.path).equals('/v1/🦄/🌈/🦄.json');
     o(req.query.get('🦄')).equals('abc123');
+    o(req.body).equals(null);
+  });
+
+  o('should parse body', () => {
+    const newReq = clone(UrlExample);
+    newReq.body = JSON.stringify({ key: '🦄' });
+    newReq.headers['content-type'] = 'application/json';
+    newReq.requestContext.http.method = 'POST';
+
+    const req = new LambdaUrlRequest(newReq, fakeContext, fakeLog);
+    o(req.body).equals('{"key":"🦄"}');
+    o(req.json()).deepEquals({ key: '🦄' });
   });
 });

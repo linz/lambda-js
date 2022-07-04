@@ -1,4 +1,3 @@
-import 'source-map-support/register.js';
 import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent } from 'aws-lambda';
 import { UrlEvent } from '../http/request.url';
 

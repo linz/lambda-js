@@ -9,6 +9,8 @@ export interface UrlEvent {
   routeKey: string;
 
   rawPath: string;
+  /** Body encoded as a string, this could be base64 encoded see isBase64Encoded */
+  body?: string;
   /** Query string without '?' @example "api=abc123" */
   rawQueryString: string;
   headers: Record<string, string>;
@@ -71,7 +73,8 @@ export class LambdaUrlRequest<T extends Record<string, string>> extends LambdaHt
   }
 
   get body(): string | null {
-    return null;
+    if (this.event.body == null) return null;
+    return this.event.body;
   }
 
   static is(x: unknown): x is UrlEvent {
