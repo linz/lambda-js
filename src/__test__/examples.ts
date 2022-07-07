@@ -157,7 +157,7 @@ export const AlbExample: ALBEvent = {
 export const UrlExample: UrlEvent = {
   version: '2.0',
   routeKey: '$default',
-  rawPath: '/v1/🦄/🌈/🦄.json',
+  rawPath: '/v1/%F0%9F%A6%84/%F0%9F%8C%88/%F0%9F%A6%84.json',
   rawQueryString: '%F0%9F%A6%84=abc123',
   headers: {
     'x-amzn-trace-id': 'Root=1-624e71a0-114297900a437c050c74f1fe',
