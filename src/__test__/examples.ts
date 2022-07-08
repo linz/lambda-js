@@ -1,5 +1,8 @@
-import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent } from 'aws-lambda';
-import { UrlEvent } from '../http/request.url';
+import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent, Context } from 'aws-lambda';
+import { LambdaAlbRequest } from '../http/request.alb.js';
+import { LambdaApiGatewayRequest } from '../http/request.api.gateway.js';
+import { LambdaUrlRequest, UrlEvent } from '../http/request.url.js';
+import { fakeLog } from './log.js';
 
 export const ApiGatewayExample: APIGatewayProxyEvent = {
   body: 'eyJ0ZXN0IjoiYm9keSJ9',
@@ -193,4 +196,37 @@ export const UrlExample: UrlEvent = {
 
 export function clone<T>(c: T): T {
   return JSON.parse(JSON.stringify(c));
+}
+
+const fakeContext = {} as Context;
+
+export function newRequestUrl<T extends Record<string, string>>(path: string, query: string): LambdaUrlRequest<T> {
+  const example = clone(UrlExample);
+  example.rawPath = encodeURI(path);
+  example.rawQueryString = encodeURI(query);
+  example.requestContext.http.path = path;
+  return new LambdaUrlRequest(example, fakeContext, fakeLog) as LambdaUrlRequest<T>;
+}
+
+export function newRequestAlb<T extends Record<string, string>>(path: string, query: string): LambdaAlbRequest<T> {
+  const example = clone(AlbExample);
+  example.path = encodeURI(path);
+  example.queryStringParameters = {};
+  for (const [key, value] of new URLSearchParams(query).entries()) {
+    example.queryStringParameters[key] = value;
+  }
+  return new LambdaAlbRequest(example, fakeContext, fakeLog) as LambdaAlbRequest<T>;
+}
+
+export function newRequestApi<T extends Record<string, string>>(
+  path: string,
+  query: string,
+): LambdaApiGatewayRequest<T> {
+  const example = clone(ApiGatewayExample);
+  example.path = encodeURI(path);
+  example.multiValueQueryStringParameters = {};
+  for (const [key, value] of new URLSearchParams(query).entries()) {
+    example.multiValueQueryStringParameters[key] = [value];
+  }
+  return new LambdaApiGatewayRequest(example, fakeContext, fakeLog) as LambdaApiGatewayRequest<T>;
 }

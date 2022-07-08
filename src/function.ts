@@ -64,7 +64,9 @@ export async function execute<T extends LambdaRequest, K>(
   }
 
   req.set('status', status);
-  req.set('metrics', req.timer.metrics);
+  if (req.timer.timers.size > 0) {
+    req.set('metrics', req.timer.metrics);
+  }
 
   if (versionInfo.hash) req.set('package', versionInfo);
 
@@ -179,7 +181,9 @@ export class lf {
       const cloudFrontId = req.header(HttpHeaderAmazon.CloudfrontId);
       const traceId = req.header(HttpHeaderAmazon.TraceId);
       const lambdaId = context.awsRequestId;
-      req.set('aws', { cloudFrontId, traceId, lambdaId });
+      if (cloudFrontId || traceId || lambdaId) {
+        req.set('aws', { cloudFrontId, traceId, lambdaId });
+      }
       req.set('method', req.method);
       req.set('path', req.path);
 
