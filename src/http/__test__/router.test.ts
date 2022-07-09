@@ -1,5 +1,5 @@
 import o from 'ospec';
-import { newRequestAlb, newRequestApi, newRequestCloudFront, newRequestUrl } from '../../__test__/examples.js';
+import { RequestTypes } from '../../__test__/examples.js';
 import { LambdaHttpRequest } from '../request.http.js';
 import { LambdaHttpResponse } from '../response.http.js';
 import { Router } from '../router.js';
@@ -15,43 +15,24 @@ o.spec('Router', () => {
   });
   const expectedResult = { fileName: '🦄.json', path: encodeURI('/v1/🦄/🌈/🦄.json'), query: [['🌈', '🦄']] };
 
-  o('should route rainbows and unicorns LambdaUrl', async () => {
-    const urlRoute = newRequestUrl('/v1/🦄/🌈/🦄.json', '🌈=🦄');
-    const res = await router.handle(urlRoute);
-    o(res.status).equals(200);
-    o(res.body).deepEquals(JSON.stringify(expectedResult));
+  for (const rt of RequestTypes) {
+    o.spec(rt.type, () => {
+      o(`should route rainbows and unicorns`, async () => {
+        const urlRoute = rt.create('/v1/🦄/🌈/🦄.json', '🌈=🦄');
+        const res = await router.handle(urlRoute);
+        o(res.status).equals(200);
+        o(res.body).deepEquals(JSON.stringify(expectedResult));
+      });
 
-    const resb = await router.handle(newRequestUrl('/v2/🦄/🌈/🦄.json', '🌈=🦄'));
-    o(resb.status).equals(404);
-  });
+      o('path should be url encoded', () => {
+        const req = rt.create('/v1/🦄/🌈/🦄.json', '');
+        o(req.path).equals('/v1/%F0%9F%A6%84/%F0%9F%8C%88/%F0%9F%A6%84.json');
+      });
 
-  o('should route rainbows and unicorns LambdaAlb', async () => {
-    const urlRoute = newRequestAlb('/v1/🦄/🌈/🦄.json', '🌈=🦄');
-    const res = await router.handle(urlRoute);
-    o(res.status).equals(200);
-    o(res.body).deepEquals(JSON.stringify(expectedResult));
-
-    const resb = await router.handle(newRequestUrl('/v2/🦄/🌈/🦄.json', '🌈=🦄'));
-    o(resb.status).equals(404);
-  });
-
-  o('should route rainbows and unicorns LambdaApi', async () => {
-    const urlRoute = newRequestApi('/v1/🦄/🌈/🦄.json', '🌈=🦄');
-    const res = await router.handle(urlRoute);
-    o(res.status).equals(200);
-    o(res.body).deepEquals(JSON.stringify(expectedResult));
-
-    const resb = await router.handle(newRequestUrl('/v2/🦄/🌈/🦄.json', '🌈=🦄'));
-    o(resb.status).equals(404);
-  });
-
-  o('should route rainbows and unicorns LambdaCloudFront', async () => {
-    const urlRoute = newRequestCloudFront('/v1/🦄/🌈/🦄.json', '🌈=🦄');
-    const res = await router.handle(urlRoute);
-    o(res.status).equals(200);
-    o(res.body).deepEquals(JSON.stringify(expectedResult));
-
-    const resb = await router.handle(newRequestUrl('/v2/🦄/🌈/🦄.json', '🌈=🦄'));
-    o(resb.status).equals(404);
-  });
+      o('should 404 on invalid routes', async () => {
+        const res = await router.handle(rt.create('/v1/🦄/🦄/🦄.json', '🌈=🦄'));
+        o(res.status).equals(404);
+      });
+    });
+  }
 });

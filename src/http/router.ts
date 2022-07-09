@@ -34,20 +34,14 @@ export class Router {
   router: FindMyWay.Instance<FindMyWay.HTTPVersion.V1>;
 
   constructor() {
-    this.router = FindMyWay();
+    this.router = FindMyWay({ defaultRoute: () => new LambdaHttpResponse(404, 'Not found') });
   }
 
   register<T extends RequestTypes>(method: HttpMethods, path: string, fn: Route<T>): void {
     this.router.on(method, path, async (req: unknown, res, params) => {
-      if (req instanceof LambdaHttpRequest) {
-        req.params = params;
-        console.log({ params: req.params, query: [...req.query.entries()] });
-        const ret = await fn(req);
-        if (ret != null) {
-          res.statusCode = ret.status;
-          res.end(ret);
-        }
-      }
+      if (!(req instanceof LambdaHttpRequest)) return new LambdaHttpResponse(500, 'Internal server error');
+      req.params = params;
+      return execute(req, fn);
     });
   }
 
@@ -60,10 +54,6 @@ export class Router {
     this.hooks[name].push(cb);
   }
 
-  /** Register a route for all HTTP types, GET, POST, HEAD, etc... */
-  all<T extends RequestTypes>(path: string, fn: Route<T>): void {
-    // return this.register('ALL', path, fn);
-  }
   get<T extends RequestTypes>(path: string, fn: Route<T>): void {
     return this.register('GET', path, fn);
   }
@@ -110,16 +100,14 @@ export class Router {
       // If a hook returns a response return the response to the user
       if (res) return this.after(req, res);
     }
-
-    const routeRes = {
-      end(value: unknown): unknown {
-        return null;
-      },
-    };
-    const routePromise = new Promise<LambdaHttpResponse | null>((resolve) => (routeRes.end = resolve));
-    this.router.lookup(req as any, routeRes as any);
-
-    const result = await routePromise;
+    /**
+     * Work around the very strict typings of find-my-way
+     * It expects everything to be some sort of http request,
+     * but internally it only ever uses `req.url` and `req.method`
+     * it also does not ever do anything with the response
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await this.router.lookup(req as any, null as any);
     if (result) return this.after(req, result);
 
     return this.after(req, new LambdaHttpResponse(404, 'Not found'));

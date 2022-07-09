@@ -201,6 +201,13 @@ export function clone<T>(c: T): T {
 
 const fakeContext = {} as Context;
 
+export const RequestTypes = [
+  { type: 'FunctionUrl', create: newRequestUrl },
+  { type: 'Alb', create: newRequestAlb },
+  { type: 'ApiGateway', create: newRequestApi },
+  { type: 'CloudFront', create: newRequestCloudFront },
+];
+
 export function newRequestUrl<T extends Record<string, string>>(path: string, query: string): LambdaUrlRequest<T> {
   const example = clone(UrlExample);
   example.rawPath = encodeURI(path);

@@ -27,13 +27,13 @@ handler.router.get<{ Params: { style: string } }>(
 );
 
 // Handle all requests
-handler.router.all('*', () => new LambdaHttpResponse(404, 'Not found'));
+handler.router.get('*', () => new LambdaHttpResponse(404, 'Not found'));
 
 function validateApiKey(s?: string | null): boolean {
   return s != null;
 }
 // create middleware to validate api key on all requests
-handler.router.all('*', (req) => {
+handler.router.hook('request', (req) => {
   const isApiValid = validateApiKey(req.query.get('api'));
   // Bail early
   if (!isApiValid) return new LambdaHttpResponse(400, 'Invalid api key');
