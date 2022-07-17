@@ -72,7 +72,6 @@ o.spec('LambdaWrap', () => {
 
     const headers: Record<HttpMethods, number> = {
       DELETE: 1,
-      // ALL: 0,
       GET: 1,
       OPTIONS: 1,
       HEAD: 1,
