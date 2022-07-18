@@ -1,3 +1,13 @@
+<a name="3.2.0"></a>
+# [3.2.0](https://github.com/linz/lambda-js/compare/v3.1.1...v3.2.0) (2022-07-18)
+
+
+### Features
+
+* switch to a more complete routing engine find-my-way ([#169](https://github.com/linz/lambda-js/issues/169)) ([3f7c9f9](https://github.com/linz/lambda-js/commit/3f7c9f9))
+
+
+
 <a name="3.1.1"></a>
 ## [3.1.1](https://github.com/linz/lambda-js/compare/v3.1.0...v3.1.1) (2022-07-04)
 
