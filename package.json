@@ -42,7 +42,7 @@
   "dependencies": {
     "@linzjs/metrics": "^6.21.1",
     "find-my-way": "^7.0.0",
-    "pino": "^8.1.0",
+    "pino": "^8.2.0",
     "ulid": "^2.3.0"
   }
 }
