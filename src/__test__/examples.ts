@@ -1,5 +1,9 @@
-import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent } from 'aws-lambda';
-import { UrlEvent } from '../http/request.url';
+import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent, Context } from 'aws-lambda';
+import { LambdaAlbRequest } from '../http/request.alb.js';
+import { LambdaApiGatewayRequest } from '../http/request.api.gateway.js';
+import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
+import { LambdaUrlRequest, UrlEvent } from '../http/request.url.js';
+import { fakeLog } from './log.js';
 
 export const ApiGatewayExample: APIGatewayProxyEvent = {
   body: 'eyJ0ZXN0IjoiYm9keSJ9',
@@ -157,7 +161,7 @@ export const AlbExample: ALBEvent = {
 export const UrlExample: UrlEvent = {
   version: '2.0',
   routeKey: '$default',
-  rawPath: '/v1/🦄/🌈/🦄.json',
+  rawPath: '/v1/%F0%9F%A6%84/%F0%9F%8C%88/%F0%9F%A6%84.json',
   rawQueryString: '%F0%9F%A6%84=abc123',
   headers: {
     'x-amzn-trace-id': 'Root=1-624e71a0-114297900a437c050c74f1fe',
@@ -193,4 +197,54 @@ export const UrlExample: UrlEvent = {
 
 export function clone<T>(c: T): T {
   return JSON.parse(JSON.stringify(c));
+}
+
+const fakeContext = {} as Context;
+
+export const RequestTypes = [
+  { type: 'FunctionUrl', create: newRequestUrl },
+  { type: 'Alb', create: newRequestAlb },
+  { type: 'ApiGateway', create: newRequestApi },
+  { type: 'CloudFront', create: newRequestCloudFront },
+];
+
+export function newRequestUrl<T extends Record<string, string>>(path: string, query: string): LambdaUrlRequest<T> {
+  const example = clone(UrlExample);
+  example.rawPath = encodeURI(path);
+  example.rawQueryString = encodeURI(query);
+  example.requestContext.http.path = path;
+  return new LambdaUrlRequest(example, fakeContext, fakeLog) as LambdaUrlRequest<T>;
+}
+
+export function newRequestAlb<T extends Record<string, string>>(path: string, query: string): LambdaAlbRequest<T> {
+  const example = clone(AlbExample);
+  example.path = encodeURI(path);
+  example.queryStringParameters = {};
+  for (const [key, value] of new URLSearchParams(query).entries()) {
+    example.queryStringParameters[key] = value;
+  }
+  return new LambdaAlbRequest(example, fakeContext, fakeLog) as LambdaAlbRequest<T>;
+}
+
+export function newRequestApi<T extends Record<string, string>>(
+  path: string,
+  query: string,
+): LambdaApiGatewayRequest<T> {
+  const example = clone(ApiGatewayExample);
+  example.path = encodeURI(path);
+  example.multiValueQueryStringParameters = {};
+  for (const [key, value] of new URLSearchParams(query).entries()) {
+    example.multiValueQueryStringParameters[key] = [value];
+  }
+  return new LambdaApiGatewayRequest(example, fakeContext, fakeLog) as LambdaApiGatewayRequest<T>;
+}
+
+export function newRequestCloudFront<T extends Record<string, string>>(
+  path: string,
+  query: string,
+): LambdaCloudFrontRequest<T> {
+  const example = clone(CloudfrontExample);
+  example.Records[0].cf.request.uri = encodeURI(path);
+  example.Records[0].cf.request.querystring = '?' + query;
+  return new LambdaCloudFrontRequest(example, fakeContext, fakeLog) as LambdaCloudFrontRequest<T>;
 }

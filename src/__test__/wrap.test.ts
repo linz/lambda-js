@@ -34,13 +34,13 @@ o.spec('LambdaWrap', () => {
 
   o('should handle middleware', async () => {
     const fn = lf.http(fakeLog);
-    fn.router.all('*', (req): LambdaHttpResponse | void => {
+    fn.router.hook('request', (req): LambdaHttpResponse | void => {
       if (req.path.includes('fail')) return new LambdaHttpResponse(500, 'Failed');
     });
-    fn.router.get('/v1/ping', () => new LambdaHttpResponse(200, 'Ok'));
+    fn.router.get('/v1/ping/:message', () => new LambdaHttpResponse(200, 'Ok'));
 
     const newReq = clone(ApiGatewayExample);
-    newReq.path = '/v1/ping';
+    newReq.path = '/v1/ping/ok';
     const ret = await new Promise((resolve) => fn(newReq, fakeContext, (a, b) => resolve(b)));
     assertAlbResult(ret);
 
@@ -72,7 +72,6 @@ o.spec('LambdaWrap', () => {
 
     const headers: Record<HttpMethods, number> = {
       DELETE: 1,
-      ALL: 0,
       GET: 1,
       OPTIONS: 1,
       HEAD: 1,
@@ -98,7 +97,6 @@ o.spec('LambdaWrap', () => {
     const fn = lf.http(fakeLog);
     fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     await new Promise((resolve) => fn(AlbExample, fakeContext, (a, b) => resolve(b)));
-
     o(fakeLog.logs.length).equals(1);
 
     const firstLog = fakeLog.logs[0];
@@ -182,7 +180,7 @@ o.spec('LambdaWrap', () => {
 
   o('should handle thrown http responses', async () => {
     const fn = lf.http(fakeLog);
-    fn.router.all('*', () => {
+    fn.router.get('*', () => {
       throw new LambdaHttpResponse(400, 'Error');
     });
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
@@ -193,7 +191,7 @@ o.spec('LambdaWrap', () => {
 
   o('should handle http exceptions', async () => {
     const fn = lf.http(fakeLog);
-    fn.router.all('*', () => {
+    fn.router.get('*', () => {
       throw new Error('Error');
     });
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
@@ -252,7 +250,7 @@ o.spec('LambdaWrap', () => {
     const serverName = lf.ServerName;
     lf.ServerName = null;
     const fn = lf.http();
-    fn.router.all('*', fakeLambda);
+    fn.router.get('*', fakeLambda);
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
 
     lf.ServerName = serverName;

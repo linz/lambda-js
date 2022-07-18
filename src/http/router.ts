@@ -1,6 +1,7 @@
 import { execute, runFunction } from '../function.js';
 import { LambdaHttpRequest, RequestTypes } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
+import FindMyWay from 'find-my-way';
 
 export type Route<T extends RequestTypes = RequestTypes> = (
   req: LambdaHttpRequest<T>,
@@ -22,36 +23,26 @@ export type HookRecord<T extends RouteHooks> = {
   [K in keyof T]: T[K][];
 };
 
-export type HttpMethods = 'DELETE' | 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT' | 'OPTIONS' | 'ALL';
+export type HttpMethods = 'DELETE' | 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT' | 'OPTIONS';
 export class Router {
-  routes: {
-    path: RegExp;
-    method: HttpMethods;
-    // TODO is there a better way to model this route list
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fn: Route<any>;
-  }[] = [];
-
   hooks: HookRecord<RouteHooks> = {
     /** Hooks to be run before every request */
     request: [],
     /** Hooks to be run after every request */
     response: [],
   };
+  router: FindMyWay.Instance<FindMyWay.HTTPVersion.V1>;
+
+  constructor() {
+    this.router = FindMyWay({ defaultRoute: () => new LambdaHttpResponse(404, 'Not found') });
+  }
 
   register<T extends RequestTypes>(method: HttpMethods, path: string, fn: Route<T>): void {
-    // Stolen from https://github.com/kwhitley/itty-router
-    const regex = RegExp(
-      `^${
-        path
-          .replace(/(\/?)\*/g, '($1.*)?')
-          .replace(/\/$/, '')
-          .replace(/:(\w+)(\?)?(\.)?/g, '$2(?<$1>[^/]+)$2$3')
-          .replace(/\.(?=[\w(])/, '\\.')
-          .replace(/\)\.\?\(([^\[]+)\[\^/g, '?)\\.?($1(?<=\\.)[^\\.') // RIP all the bytes lost :'(
-      }/*$`,
-    );
-    this.routes.push({ path: regex, method, fn });
+    this.router.on(method, path, async (req: unknown, res, params) => {
+      if (!(req instanceof LambdaHttpRequest)) return new LambdaHttpResponse(500, 'Internal server error');
+      req.params = params;
+      return execute(req, fn);
+    });
   }
 
   /**
@@ -63,10 +54,6 @@ export class Router {
     this.hooks[name].push(cb);
   }
 
-  /** Register a route for all HTTP types, GET, POST, HEAD, etc... */
-  all<T extends RequestTypes>(path: string, fn: Route<T>): void {
-    return this.register('ALL', path, fn);
-  }
   get<T extends RequestTypes>(path: string, fn: Route<T>): void {
     return this.register('GET', path, fn);
   }
@@ -113,17 +100,15 @@ export class Router {
       // If a hook returns a response return the response to the user
       if (res) return this.after(req, res);
     }
-
-    for (const r of this.routes) {
-      if (r.method !== 'ALL' && req.method !== r.method) continue;
-      const m = req.path.match(r.path);
-      if (m) {
-        // TODO this should ideally be validated
-        req.params = m.groups;
-        const res = await execute(req, r.fn);
-        if (res) return this.after(req, res);
-      }
-    }
+    /**
+     * Work around the very strict typings of find-my-way
+     * It expects everything to be some sort of http request,
+     * but internally it only ever uses `req.url` and `req.method`
+     * it also does not ever do anything with the response
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await this.router.lookup(req as any, null as any);
+    if (result) return this.after(req, result);
 
     return this.after(req, new LambdaHttpResponse(404, 'Not found'));
   }

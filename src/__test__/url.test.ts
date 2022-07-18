@@ -44,7 +44,7 @@ o.spec('FunctionUrl', () => {
 
   o('should support utf8 paths and query', () => {
     const req = new LambdaUrlRequest(UrlExample, fakeContext, fakeLog);
-    o(req.path).equals('/v1/🦄/🌈/🦄.json');
+    o(req.path).equals('/v1/%F0%9F%A6%84/%F0%9F%8C%88/%F0%9F%A6%84.json');
     o(req.query.get('🦄')).equals('abc123');
     o(req.body).equals(null);
   });

@@ -98,4 +98,9 @@ export abstract class LambdaHttpRequest<
     if (this._query == null) this._query = this.loadQueryString();
     return this._query;
   }
+
+  /** This is used by the router and is just the path */
+  protected get url(): string {
+    return this.path;
+  }
 }
