@@ -1,3 +1,19 @@
+<a name="3.2.1"></a>
+## [3.2.1](https://github.com/linz/lambda-js/compare/v3.2.0...v3.2.1) (2022-07-26)
+
+
+### Bug Fixes
+
+* ensure logging the request is the last thing that is done before sending a response ([#178](https://github.com/linz/lambda-js/issues/178)) ([c0fad56](https://github.com/linz/lambda-js/commit/c0fad56))
+
+
+### Features
+
+* **deps:** bump pino from 7.11.0 to 8.1.0 ([#165](https://github.com/linz/lambda-js/issues/165)) ([762f9f6](https://github.com/linz/lambda-js/commit/762f9f6))
+* **deps:** bump pino from 8.1.0 to 8.3.0 ([#176](https://github.com/linz/lambda-js/issues/176)) ([172a442](https://github.com/linz/lambda-js/commit/172a442))
+
+
+
 <a name="3.2.0"></a>
 # [3.2.0](https://github.com/linz/lambda-js/compare/v3.1.1...v3.2.0) (2022-07-18)
 
