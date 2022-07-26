@@ -1,7 +1,7 @@
-import { execute, runFunction } from '../function.js';
+import FindMyWay from 'find-my-way';
+import { runFunction } from '../function.js';
 import { LambdaHttpRequest, RequestTypes } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
-import FindMyWay from 'find-my-way';
 
 export type Route<T extends RequestTypes = RequestTypes> = (
   req: LambdaHttpRequest<T>,
@@ -41,7 +41,7 @@ export class Router {
     this.router.on(method, path, async (req: unknown, res, params) => {
       if (!(req instanceof LambdaHttpRequest)) return new LambdaHttpResponse(500, 'Internal server error');
       req.params = params;
-      return execute(req, fn);
+      return runFunction(req, fn);
     });
   }
 

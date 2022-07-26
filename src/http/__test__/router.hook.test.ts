@@ -1,7 +1,8 @@
-import { Context } from 'aws-lambda';
+import { ALBResult, Context } from 'aws-lambda';
 import o from 'ospec';
 import sinon from 'sinon';
-import { UrlExample } from '../../__test__/examples.js';
+import { lf } from '../../function.js';
+import { AlbExample, UrlExample } from '../../__test__/examples.js';
 import { fakeLog } from '../../__test__/log.js';
 import { LambdaUrlRequest } from '../request.url.js';
 import { LambdaHttpResponse } from '../response.http.js';
@@ -93,6 +94,27 @@ o.spec('RouterHook', () => {
       const res = await r.handle(req);
       o(res.status).equals(500);
       o(res.statusDescription).equals('Internal Server Error');
+    });
+
+    o('should log after the response hook', async () => {
+      fakeLog.logs = [];
+      const http = lf.http(fakeLog);
+
+      http.router.hook('response', (req, res) => {
+        if (res.status !== 404) throw new Error('status should be 404');
+        res.status = 200; // Convert the response to a 200!
+        req.set('logParam', 'response'); // Add a new log parameter to be logged
+      });
+
+      const res = await new Promise<ALBResult>((r) => http(AlbExample, fakeContext, (err, res) => r(res as ALBResult)));
+
+      o(fakeLog.logs.length).equals(1);
+      const [firstLog] = fakeLog.logs;
+      o(firstLog.logParam).equals('response');
+      o(firstLog['@type']).equals('report');
+      o(firstLog['status']).equals(200);
+
+      o(res.statusCode).equals(200);
     });
   });
 });
