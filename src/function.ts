@@ -37,6 +37,8 @@ export async function runFunction<T extends LambdaRequest, K>(
   req: T,
   fn: (req: T) => K | Promise<K>,
 ): Promise<K | LambdaHttpResponse> {
+  if (!req.timer.timers.has('lambda')) req.timer.start('lambda');
+
   try {
     return await fn(req);
   } catch (error) {
@@ -49,14 +51,7 @@ export async function runFunction<T extends LambdaRequest, K>(
   }
 }
 
-export async function execute<T extends LambdaRequest, K>(
-  req: T,
-  fn: (req: T) => K | Promise<K>,
-): Promise<K | LambdaHttpResponse> {
-  req.timer.start('lambda');
-
-  const res = await runFunction(req, fn);
-
+function after<T extends LambdaRequest, K>(req: T, res: K): K | LambdaHttpResponse {
   let status = 200;
   if (LambdaHttpResponse.is(res)) {
     status = res.status;
@@ -70,7 +65,7 @@ export async function execute<T extends LambdaRequest, K>(
 
   if (versionInfo.hash) req.set('package', versionInfo);
 
-  const duration = req.timer.end('lambda');
+  const duration = req.timer.timers.has('lambda') ? req.timer.end('lambda') : 0;
   req.set('unfinished', req.timer.unfinished);
   req.set('duration', duration);
 
@@ -154,10 +149,14 @@ export class lf {
       const lambdaId = context.awsRequestId;
       req.set('aws', { lambdaId });
 
-      execute(req, fn).then((res) => {
-        if (opts.rejectOnError && LambdaHttpResponse.is(res)) {
-          if (req.logContext['err']) return callback(req.logContext['err'] as Error);
-          if (res.status > 399) return callback(req.toResponse(res) as unknown as string);
+      runFunction(req, fn).then((res) => {
+        after(req, res);
+
+        if (LambdaHttpResponse.is(res)) {
+          if (opts.rejectOnError) {
+            if (req.logContext['err']) return callback(req.logContext['err'] as Error);
+            if (res.status > 399) return callback(req.toResponse(res) as unknown as string);
+          }
         }
         return callback(null, req.toResponse(res));
       });
@@ -201,6 +200,8 @@ export class lf {
         }
 
         if (lf.ServerName) res.header(HttpHeader.Server, `${lf.ServerName}-${version}`);
+
+        after(req, res);
 
         callback(null, req.toResponse(res));
       });
