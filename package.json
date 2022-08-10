@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@linzjs/style": "^3.9.0",
-    "@types/aws-lambda": "^8.10.101",
+    "@types/aws-lambda": "^8.10.102",
     "@types/node": "^16.4.13",
     "@types/ospec": "^4.0.3",
     "@types/pino": "^7.0.5",
