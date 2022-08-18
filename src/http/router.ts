@@ -112,7 +112,6 @@ export class Router {
     }
 
     return Promise.race(requestHandles).then((res) => {
-      console.log('RaceDone', requestHandles);
       req.abort.abort();
       return finalize(req, res);
     });

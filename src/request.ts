@@ -1,4 +1,4 @@
-import { Metrics } from '@linzjs/metrics';
+import { Metrics } from './metric.js';
 import { Context } from 'aws-lambda';
 import { ulid } from 'ulid';
 import { LogType } from './log.js';
