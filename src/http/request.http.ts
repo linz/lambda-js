@@ -37,6 +37,8 @@ export abstract class LambdaHttpRequest<
   private _isHeadersLoaded: boolean;
   /** Is this the first request for the lambda function */
   public isColdStart = false;
+  /** Number of requests handled by this lambda function */
+  public requestCount = -1;
 
   constructor(request: Request, ctx: Context, log: LogType) {
     super(request, ctx, log);

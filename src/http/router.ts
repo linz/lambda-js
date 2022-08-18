@@ -1,4 +1,4 @@
-import FindMyWay, { HTTPMethod } from 'find-my-way';
+import FindMyWay from 'find-my-way';
 import { after, runFunction } from '../function.js';
 import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from '../header.js';
 import { LambdaHttpRequest, RequestTypes } from './request.http.js';
@@ -83,9 +83,6 @@ export class Router {
   /** After a route has finished processing run the response hooks on the request/response pair */
   async after(req: LambdaHttpRequest, res: LambdaHttpResponse): Promise<LambdaHttpResponse> {
     try {
-      res.header(HttpHeaderRequestId.RequestId, req.id);
-      res.header(HttpHeaderRequestId.CorrelationId, req.correlationId);
-
       const duration = req.timer.metrics?.['lambda'];
       if (duration != null) res.header(HttpHeader.ServerTiming, `total;dur=${duration}`);
 
@@ -104,6 +101,8 @@ export class Router {
     }
     // Do not cache http 500 errors
     if (res.status === 500) res.header(HttpHeader.CacheControl, 'no-store');
+    res.header(HttpHeaderRequestId.RequestId, req.id);
+    res.header(HttpHeaderRequestId.CorrelationId, req.correlationId);
     after(req, res);
     return res;
   }
@@ -114,9 +113,12 @@ export class Router {
    * Request flow: hook.request(req) -> requestHandler(req) -> hook.response(req, res)
    */
   async handle(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
+    // Track the number of requests
     req.isColdStart = this.requestCount === 0;
+    req.requestCount = this.requestCount;
     this.requestCount++;
-    // Trace cloudfront requests back to the cloudfront logs
+
+    // Trace cloudfront/aws/lambda requests back to the cloudfront logs
     const cloudFrontId = req.header(HttpHeaderAmazon.CloudfrontId);
     const traceId = req.header(HttpHeaderAmazon.TraceId);
     const lambdaId = req.context.awsRequestId;
