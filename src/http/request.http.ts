@@ -100,7 +100,7 @@ export abstract class LambdaHttpRequest<
   }
 
   /** This is used by the router and is just the path */
-  protected get url(): string {
+  get url(): string {
     return this.path;
   }
 }

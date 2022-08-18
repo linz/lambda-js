@@ -1,16 +1,15 @@
 import { Callback, Context, Handler } from 'aws-lambda';
 import pino from 'pino';
-import { LambdaResponse } from './response.js';
-import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from './header.js';
-import { LogType } from './log.js';
-import { LambdaRequest } from './request.js';
 import { LambdaAlbRequest } from './http/request.alb.js';
 import { LambdaApiGatewayRequest } from './http/request.api.gateway.js';
 import { LambdaCloudFrontRequest } from './http/request.cloudfront.js';
 import { HttpRequestEvent, HttpResponse, LambdaHttpRequest } from './http/request.http.js';
+import { LambdaUrlRequest } from './http/request.url.js';
 import { LambdaHttpResponse } from './http/response.http.js';
 import { Router } from './http/router.js';
-import { LambdaUrlRequest } from './http/request.url.js';
+import { LogType } from './log.js';
+import { LambdaRequest } from './request.js';
+import { LambdaResponse } from './response.js';
 
 export interface HttpStatus {
   statusCode: string;
@@ -51,7 +50,7 @@ export async function runFunction<T extends LambdaRequest, K>(
   }
 }
 
-function after<T extends LambdaRequest, K>(req: T, res: K): K | LambdaHttpResponse {
+export function after<T extends LambdaRequest, K>(req: T, res: K): void {
   let status = 200;
   if (LambdaHttpResponse.is(res)) {
     status = res.status;
@@ -69,14 +68,12 @@ function after<T extends LambdaRequest, K>(req: T, res: K): K | LambdaHttpRespon
   req.set('unfinished', req.timer.unfinished);
   req.set('duration', duration);
 
-  // // Log a "Report" or "Metalog" full of information at the end of every request
+  // Log a "Report" or "Metalog" full of information at the end of every request
   req.set('@type', 'report');
 
   if (status > 499) req.log.error(req.logContext, 'Lambda:Done');
   else if (status > 399) req.log.warn(req.logContext, 'Lambda:Done');
   else req.log.info(req.logContext, 'Lambda:Done');
-
-  return res;
 }
 
 interface LambdaHandlerOptions {
@@ -176,35 +173,17 @@ export class lf {
     function httpHandler(event: HttpRequestEvent, context: Context, callback: Callback<HttpResponse>): void {
       const req = lf.request(event, context, logger ?? lf.Logger);
 
-      // Trace cloudfront requests back to the cloudfront logs
-      const cloudFrontId = req.header(HttpHeaderAmazon.CloudfrontId);
-      const traceId = req.header(HttpHeaderAmazon.TraceId);
-      const lambdaId = context.awsRequestId;
-      if (cloudFrontId || traceId || lambdaId) {
-        req.set('aws', { cloudFrontId, traceId, lambdaId });
-      }
-      req.set('method', req.method);
-      req.set('path', req.path);
-
-      router.handle(req).then((res: LambdaHttpResponse) => {
-        // Do not cache http 500 errors
-        if (res.status === 500) res.header(HttpHeader.CacheControl, 'no-store');
-        res.header(HttpHeaderRequestId.RequestId, req.id);
-        res.header(HttpHeaderRequestId.CorrelationId, req.correlationId);
-
-        const duration = req.timer.metrics?.['lambda'];
-        if (duration != null) res.header(HttpHeader.ServerTiming, `total;dur=${duration}`);
-
-        if (!res.isBase64Encoded && res.header(HttpHeader.ContentType) == null) {
-          res.header(HttpHeader.ContentType, ApplicationJson);
-        }
-
-        if (lf.ServerName) res.header(HttpHeader.Server, `${lf.ServerName}-${version}`);
-
-        after(req, res);
-
-        callback(null, req.toResponse(res));
-      });
+      router
+        .handle(req)
+        .then((res: LambdaHttpResponse) => callback(null, req.toResponse(res)))
+        .catch((e) => {
+          // This should never happen, all errors should be caught inside of the `router.handle`
+          // This is left here for paranoia.
+          req.log.fatal(e, 'Lambda:Failed');
+          const res = new LambdaHttpResponse(500, 'Internal Server Error');
+          req.set('err', e);
+          callback(null, req.toResponse(res));
+        });
     }
     httpHandler.router = router;
     return httpHandler;

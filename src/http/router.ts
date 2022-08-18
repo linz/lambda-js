@@ -1,5 +1,6 @@
-import FindMyWay from 'find-my-way';
-import { runFunction } from '../function.js';
+import FindMyWay, { HTTPMethod } from 'find-my-way';
+import { after, runFunction } from '../function.js';
+import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from '../header.js';
 import { LambdaHttpRequest, RequestTypes } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
 
@@ -38,7 +39,7 @@ export class Router {
   }
 
   register<T extends RequestTypes>(method: HttpMethods, path: string, fn: Route<T>): void {
-    this.router.on(method, path, async (req: unknown, res, params) => {
+    this.router.on(method, path, (req: unknown, res, params) => {
       if (!(req instanceof LambdaHttpRequest)) return new LambdaHttpResponse(500, 'Internal server error');
       req.params = params;
       return runFunction(req, fn);
@@ -77,15 +78,31 @@ export class Router {
   }
 
   /** After a route has finished processing run the response hooks on the request/response pair */
-  async after(req: LambdaHttpRequest, response: LambdaHttpResponse): Promise<LambdaHttpResponse> {
+  async after(req: LambdaHttpRequest, res: LambdaHttpResponse): Promise<LambdaHttpResponse> {
     try {
-      for (const hook of this.hooks.response) await hook(req, response);
+      res.header(HttpHeaderRequestId.RequestId, req.id);
+      res.header(HttpHeaderRequestId.CorrelationId, req.correlationId);
+
+      const duration = req.timer.metrics?.['lambda'];
+      if (duration != null) res.header(HttpHeader.ServerTiming, `total;dur=${duration}`);
+
+      if (!res.isBase64Encoded && res.header(HttpHeader.ContentType) == null) {
+        res.header(HttpHeader.ContentType, ApplicationJson);
+      }
+
+      for (const hook of this.hooks.response) await hook(req, res);
     } catch (e) {
-      if (LambdaHttpResponse.is(e)) return e;
-      req.set('err', e);
-      return new LambdaHttpResponse(500, 'Internal Server Error');
+      if (LambdaHttpResponse.is(e)) {
+        res = e;
+      } else {
+        req.set('err', e);
+        res = new LambdaHttpResponse(500, 'Internal Server Error');
+      }
     }
-    return response;
+    // Do not cache http 500 errors
+    if (res.status === 500) res.header(HttpHeader.CacheControl, 'no-store');
+    after(req, res);
+    return res;
   }
 
   /**
@@ -94,6 +111,16 @@ export class Router {
    * Request flow: hook.request(req) -> requestHandler(req) -> hook.response(req, res)
    */
   async handle(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
+    // Trace cloudfront requests back to the cloudfront logs
+    const cloudFrontId = req.header(HttpHeaderAmazon.CloudfrontId);
+    const traceId = req.header(HttpHeaderAmazon.TraceId);
+    const lambdaId = req.context.awsRequestId;
+    if (cloudFrontId || traceId || lambdaId) {
+      req.set('aws', { cloudFrontId, traceId, lambdaId });
+    }
+    req.set('method', req.method);
+    req.set('path', req.path);
+
     // On before request
     for (const hook of this.hooks.request) {
       const res = await runFunction(req, hook);
