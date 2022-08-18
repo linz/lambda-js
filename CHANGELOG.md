@@ -1,4 +1,19 @@
 <a name="3.2.1"></a>
+## [4.0.0](https://github.com/linz/lambda-js/compare/v3.2.2...v4.0.0) (2022-08-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **http:** switch to async request handlers for http functions
+
+### Features
+
+* **http:** ensure requestId and correlationId are set on errors ([fcbf4f8](https://github.com/linz/lambda-js/commit/fcbf4f8982fb0d9ef1953b508918ea661f136c65))
+* **http:** move all the handling logic into the router ([b3239ae](https://github.com/linz/lambda-js/commit/b3239aea661bf697b65227f9030ecc53880edd5d))
+* **http:** switch to async request handlers for http functions ([03437f1](https://github.com/linz/lambda-js/commit/03437f1ccfd56de9de835d83fbfdcbef9b317c6b))
+* **http:** track request counter ([851a930](https://github.com/linz/lambda-js/commit/851a9305b1fa7819579e7a3ff3ed192ff60e0b0c))
+* **http:** use high resolution timer for metrics ([3150c32](https://github.com/linz/lambda-js/commit/3150c326aabc3f13c78072b7fc739a8981908bb0))
+
 ## [3.2.2](https://github.com/linz/lambda-js/compare/v3.2.1...v3.2.2) (2022-08-18)
 
 
