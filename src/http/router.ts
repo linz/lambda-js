@@ -1,6 +1,7 @@
 import FindMyWay from 'find-my-way';
-import { after, runFunction } from '../function.js';
-import { ApplicationJson, HttpHeader, HttpHeaderAmazon, HttpHeaderRequestId } from '../header.js';
+import timers from 'timers/promises';
+import { finalize, lf, runFunction } from '../function.js';
+import { HttpHeaderAmazon } from '../header.js';
 import { LambdaHttpRequest, RequestTypes } from './request.http.js';
 import { LambdaHttpResponse } from './response.http.js';
 
@@ -26,9 +27,6 @@ export type HookRecord<T extends RouteHooks> = {
 
 export type HttpMethods = 'DELETE' | 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT' | 'OPTIONS';
 export class Router {
-  /** Number of requests handled by this router */
-  requestCount: number;
-
   hooks: HookRecord<RouteHooks> = {
     /** Hooks to be run before every request */
     request: [],
@@ -36,6 +34,9 @@ export class Router {
     response: [],
   };
   router: FindMyWay.Instance<FindMyWay.HTTPVersion.V1>;
+
+  /** Should the request timeout before the lambda finishes executing */
+  timeoutEarlyMs = 0;
 
   constructor() {
     this.router = FindMyWay({ defaultRoute: () => new LambdaHttpResponse(404, 'Not found') });
@@ -83,27 +84,13 @@ export class Router {
   /** After a route has finished processing run the response hooks on the request/response pair */
   async after(req: LambdaHttpRequest, res: LambdaHttpResponse): Promise<LambdaHttpResponse> {
     try {
-      const duration = req.timer.metrics?.['lambda'];
-      if (duration != null) res.header(HttpHeader.ServerTiming, `total;dur=${duration}`);
-
-      if (!res.isBase64Encoded && res.header(HttpHeader.ContentType) == null) {
-        res.header(HttpHeader.ContentType, ApplicationJson);
-      }
-
       for (const hook of this.hooks.response) await hook(req, res);
     } catch (e) {
-      if (LambdaHttpResponse.is(e)) {
-        res = e;
-      } else {
-        req.set('err', e);
-        res = new LambdaHttpResponse(500, 'Internal Server Error');
-      }
+      if (LambdaHttpResponse.is(e)) return e;
+      req.set('err', e);
+      return new LambdaHttpResponse(500, 'Internal Server Error');
     }
-    // Do not cache http 500 errors
-    if (res.status === 500) res.header(HttpHeader.CacheControl, 'no-store');
-    res.header(HttpHeaderRequestId.RequestId, req.id);
-    res.header(HttpHeaderRequestId.CorrelationId, req.correlationId);
-    after(req, res);
+
     return res;
   }
 
@@ -113,10 +100,31 @@ export class Router {
    * Request flow: hook.request(req) -> requestHandler(req) -> hook.response(req, res)
    */
   async handle(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
-    // Track the number of requests
-    req.isColdStart = this.requestCount === 0;
-    req.requestCount = this.requestCount;
-    this.requestCount++;
+    const requestHandles = [this._handle(req)];
+    if (this.timeoutEarlyMs && typeof req.context.getRemainingTimeInMillis === 'function') {
+      const timeoutInMs = req.context.getRemainingTimeInMillis() - this.timeoutEarlyMs;
+      requestHandles.push(
+        // TODO should after hooks fire on timeout?
+        timers.setTimeout(timeoutInMs, new LambdaHttpResponse(408, 'Request Timed Out'), {
+          signal: req.abort.signal,
+        }),
+      );
+    }
+
+    return Promise.race(requestHandles).then((res) => {
+      console.log('RaceDone', requestHandles);
+      req.abort.abort();
+      return finalize(req, res);
+    });
+  }
+
+  /**
+   * Handle a incoming request
+   *
+   * Request flow: hook.request(req) -> requestHandler(req) -> hook.response(req, res)
+   */
+  async _handle(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
+    if (req.requestCount === -1) req.requestCount = lf.requestCount++;
 
     // Trace cloudfront/aws/lambda requests back to the cloudfront logs
     const cloudFrontId = req.header(HttpHeaderAmazon.CloudfrontId);
@@ -134,6 +142,7 @@ export class Router {
       // If a hook returns a response return the response to the user
       if (res) return this.after(req, res);
     }
+
     /**
      * Work around the very strict typings of find-my-way
      * It expects everything to be some sort of http request,

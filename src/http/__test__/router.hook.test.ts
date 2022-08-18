@@ -106,7 +106,7 @@ o.spec('RouterHook', () => {
         req.set('logParam', 'response'); // Add a new log parameter to be logged
       });
 
-      const res = await new Promise<ALBResult>((r) => http(AlbExample, fakeContext, (err, res) => r(res as ALBResult)));
+      const res = await http(AlbExample, fakeContext);
 
       o(fakeLog.logs.length).equals(1);
       const [firstLog] = fakeLog.logs;
@@ -114,7 +114,7 @@ o.spec('RouterHook', () => {
       o(firstLog['@type']).equals('report');
       o(firstLog['status']).equals(200);
 
-      o(res.statusCode).equals(200);
+      o((res as ALBResult).statusCode).equals(200);
     });
   });
 });

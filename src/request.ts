@@ -19,6 +19,14 @@ export class LambdaRequest<T = unknown, K = unknown> {
   public headers: Map<string, string>;
   public log: LogType;
 
+  /** Number of of requests served by this lambda */
+  public requestCount: number;
+
+  /** Is this the first request for this lambda function */
+  public get isColdStart(): boolean {
+    return this.requestCount === 0;
+  }
+
   constructor(event: T, ctx: Context, log: LogType) {
     this.context = ctx;
     this.event = event;

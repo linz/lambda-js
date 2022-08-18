@@ -1,5 +1,6 @@
 import { Callback, Context, Handler } from 'aws-lambda';
 import pino from 'pino';
+import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
 import { LambdaAlbRequest } from './http/request.alb.js';
 import { LambdaApiGatewayRequest } from './http/request.api.gateway.js';
 import { LambdaCloudFrontRequest } from './http/request.cloudfront.js';
@@ -15,6 +16,10 @@ export interface HttpStatus {
   statusCode: string;
   statusDescription: string;
 }
+export type LambdaHandlerAsync<TEvent = unknown, TResult = unknown> = (
+  event: TEvent,
+  context: Context,
+) => Promise<TResult>;
 
 export type LambdaHandler<TEvent = unknown, TResult = unknown> = (
   event: TEvent,
@@ -50,21 +55,32 @@ export async function runFunction<T extends LambdaRequest, K>(
   }
 }
 
-export function after<T extends LambdaRequest, K>(req: T, res: K): void {
+export function finalize<T extends LambdaRequest, K>(req: T, res: K): K {
+  const duration = req.timer.timers.has('lambda') ? req.timer.end('lambda') : 0;
+
   let status = 200;
-  if (LambdaHttpResponse.is(res)) {
+  if (res instanceof LambdaHttpResponse) {
+    // Do not cache 5xx errors
+    if (res.status >= 500) res.header(HttpHeader.CacheControl, 'no-store');
+
+    res.header(HttpHeader.ServerTiming, `total;dur=${duration}`);
+
+    if (!res.isBase64Encoded && res.header(HttpHeader.ContentType) == null) {
+      res.header(HttpHeader.ContentType, ApplicationJson);
+    }
     status = res.status;
     req.set('description', res.statusDescription);
+    res.header(HttpHeaderRequestId.RequestId, req.id);
+    if (req instanceof LambdaHttpRequest) {
+      res.header(HttpHeaderRequestId.CorrelationId, req.correlationId);
+    }
   }
 
   req.set('status', status);
-  if (req.timer.timers.size > 0) {
-    req.set('metrics', req.timer.metrics);
-  }
-
+  if (req.timer.timers.size > 0) req.set('metrics', req.timer.metrics);
   if (versionInfo.hash) req.set('package', versionInfo);
 
-  const duration = req.timer.timers.has('lambda') ? req.timer.end('lambda') : 0;
+  req.set('requestCount', req.requestCount);
   req.set('unfinished', req.timer.unfinished);
   req.set('duration', duration);
 
@@ -74,6 +90,7 @@ export function after<T extends LambdaRequest, K>(req: T, res: K): void {
   if (status > 499) req.log.error(req.logContext, 'Lambda:Done');
   else if (status > 399) req.log.warn(req.logContext, 'Lambda:Done');
   else req.log.info(req.logContext, 'Lambda:Done');
+  return res;
 }
 
 interface LambdaHandlerOptions {
@@ -112,6 +129,9 @@ export class lf {
    */
   static ServerName: string | null = 'linz';
 
+  /** Number of requests served by this lambda function */
+  static requestCount = 0;
+
   static request(req: HttpRequestEvent, ctx: Context, log: LogType): LambdaHttpRequest {
     if (LambdaAlbRequest.is(req)) return new LambdaAlbRequest(req, ctx, log);
     if (LambdaUrlRequest.is(req)) return new LambdaUrlRequest(req, ctx, log);
@@ -138,6 +158,7 @@ export class lf {
     const opts = addDefaultOptions(options);
     function handler(event: TEvent, context: Context, callback: Callback<TResult>): void {
       const req = new LambdaRequest<TEvent, TResult>(event, context, logger ?? lf.Logger);
+      req.requestCount = lf.requestCount++;
       if (opts.tracePercent > 0 && Math.random() < opts.tracePercent) req.log.level = 'trace';
       if (process.env.TRACE_LAMBDA) req.log.level = 'trace';
 
@@ -147,7 +168,7 @@ export class lf {
       req.set('aws', { lambdaId });
 
       runFunction(req, fn).then((res) => {
-        after(req, res);
+        finalize(req, res);
 
         if (LambdaHttpResponse.is(res)) {
           if (opts.rejectOnError) {
@@ -168,24 +189,28 @@ export class lf {
    *
    * @param logger optional logger to use for the request @see lf.Logger
    */
-  public static http(logger?: LogType): LambdaHandler<HttpRequestEvent, HttpResponse> & { router: Router } {
+  public static http(logger?: LogType): LambdaHandlerAsync<HttpRequestEvent, HttpResponse> & HttpHandlerOptions {
     const router = new Router();
-    function httpHandler(event: HttpRequestEvent, context: Context, callback: Callback<HttpResponse>): void {
-      const req = lf.request(event, context, logger ?? lf.Logger);
 
-      router
-        .handle(req)
-        .then((res: LambdaHttpResponse) => callback(null, req.toResponse(res)))
-        .catch((e) => {
-          // This should never happen, all errors should be caught inside of the `router.handle`
-          // This is left here for paranoia.
-          req.log.fatal(e, 'Lambda:Failed');
-          const res = new LambdaHttpResponse(500, 'Internal Server Error');
-          req.set('err', e);
-          callback(null, req.toResponse(res));
-        });
+    async function httpHandler(event: HttpRequestEvent, context: Context): Promise<HttpResponse> {
+      const req = lf.request(event, context, logger ?? lf.Logger);
+      try {
+        const res = await router.handle(req);
+        return req.toResponse(res);
+      } catch (err) {
+        req.log.fatal({ err: err }, 'Lambda:Failed');
+        const res = new LambdaHttpResponse(500, 'Internal Server Error');
+        req.set('err', err);
+        res.header(HttpHeaderRequestId.RequestId, req.id);
+        res.header(HttpHeaderRequestId.CorrelationId, req.correlationId);
+        return req.toResponse(res);
+      }
     }
     httpHandler.router = router;
     return httpHandler;
   }
+}
+
+export interface HttpHandlerOptions {
+  router: Router;
 }

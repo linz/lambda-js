@@ -35,10 +35,9 @@ export abstract class LambdaHttpRequest<
   public params: Rt['Params'];
 
   private _isHeadersLoaded: boolean;
-  /** Is this the first request for the lambda function */
-  public isColdStart = false;
-  /** Number of requests handled by this lambda function */
-  public requestCount = -1;
+
+  /** Should this request be aborted */
+  public abort: AbortController = new AbortController();
 
   constructor(request: Request, ctx: Context, log: LogType) {
     super(request, ctx, log);
