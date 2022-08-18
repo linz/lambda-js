@@ -26,6 +26,9 @@ export type HookRecord<T extends RouteHooks> = {
 
 export type HttpMethods = 'DELETE' | 'GET' | 'HEAD' | 'PATCH' | 'POST' | 'PUT' | 'OPTIONS';
 export class Router {
+  /** Number of requests handled by this router */
+  requestCount: number;
+
   hooks: HookRecord<RouteHooks> = {
     /** Hooks to be run before every request */
     request: [],
@@ -111,6 +114,8 @@ export class Router {
    * Request flow: hook.request(req) -> requestHandler(req) -> hook.response(req, res)
    */
   async handle(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
+    req.isColdStart = this.requestCount === 0;
+    this.requestCount++;
     // Trace cloudfront requests back to the cloudfront logs
     const cloudFrontId = req.header(HttpHeaderAmazon.CloudfrontId);
     const traceId = req.header(HttpHeaderAmazon.TraceId);

@@ -35,6 +35,8 @@ export abstract class LambdaHttpRequest<
   public params: Rt['Params'];
 
   private _isHeadersLoaded: boolean;
+  /** Is this the first request for the lambda function */
+  public isColdStart = false;
 
   constructor(request: Request, ctx: Context, log: LogType) {
     super(request, ctx, log);
