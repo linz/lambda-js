@@ -40,7 +40,7 @@ export class LambdaAlbRequest<T extends Record<string, string>> extends LambdaHt
     if (this.event.queryStringParameters == null) return ret;
 
     for (const [key, value] of Object.entries(this.event.queryStringParameters)) {
-      ret.append(key.toLowerCase(), value ?? 'true');
+      ret.append(key, value ?? 'true');
     }
     return ret;
   }

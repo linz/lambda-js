@@ -52,7 +52,7 @@ export class LambdaCloudFrontRequest<T extends Record<string, string>> extends L
   loadQueryString(): URLSearchParams {
     const query = this.event.Records[0].cf.request.querystring;
     if (query == null) return new URLSearchParams();
-    return new URLSearchParams(query.toLowerCase());
+    return new URLSearchParams(query);
   }
 
   get path(): string {

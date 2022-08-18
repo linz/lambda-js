@@ -48,7 +48,7 @@ export class LambdaApiGatewayRequest<T extends Record<string, string>> extends L
     if (this.event.multiValueQueryStringParameters == null) return query;
     for (const [key, values] of Object.entries(this.event.multiValueQueryStringParameters)) {
       if (values == null) continue;
-      for (const value of values) query.append(key.toLowerCase(), value);
+      for (const value of values) query.append(key, value);
     }
     return query;
   }
