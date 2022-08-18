@@ -1,4 +1,11 @@
 <a name="3.2.1"></a>
+## [3.2.2](https://github.com/linz/lambda-js/compare/v3.2.1...v3.2.2) (2022-08-18)
+
+
+### Bug Fixes
+
+* query string parameters should not be lower cased ([5e36b5d](https://github.com/linz/lambda-js/commit/5e36b5d1e06dfeaad81e5ef2d0d003777f9e5fc5))
+
 ## [3.2.1](https://github.com/linz/lambda-js/compare/v3.2.0...v3.2.1) (2022-07-26)
 
 
@@ -174,6 +181,3 @@
 ### Features
 
 * initial commit ([faad8ed](https://github.com/linz/lambda/commit/faad8edf610ce8d74fa366a42450120840671b95))
-
-
-
