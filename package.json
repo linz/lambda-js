@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "find-my-way": "^7.0.0",
-    "pino": "^8.3.0",
+    "pino": "^8.6.0",
     "ulid": "^2.3.0"
   }
 }
