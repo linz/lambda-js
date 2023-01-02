@@ -127,10 +127,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.49.tgz#560b1ea774b61e19a89c3fc72d2dcaa3863f38b2"
   integrity sha512-Abq9fBviLV93OiXMu+f6r0elxCzRwc0RC5f99cU892uBITL44pTvgvEqlRlPRi8EGcO1z7Cp8A4d0s/p3J/+Nw==
 
-"@types/ospec@^4.0.3":
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/@types/ospec/-/ospec-4.0.4.tgz#24c4a7be8cda3cd4ba3178c96674d0f6f31dae54"
-  integrity sha512-MZMMHJ4kbwmXVZjSsCECPAe6J+BQmDx74dm5Wz/6f/Yk7Go1EEk2vuB2QLEmRBVuEGbMKOZlavtZ+NxIkdjiGA==
+"@types/ospec@^4.0.5":
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/@types/ospec/-/ospec-4.0.5.tgz#d48477b6c93cb7da4f5bdf412138b4d33a844f2e"
+  integrity sha512-wEbcHLUCHEDG4018aqTJLiG4KgRO1M7DomhAF4CPQ+9ZwpQB45kuHVZNvVOf7eltzsyLHNfrRg1IOc3DYEIu1w==
 
 "@types/pino@^7.0.5":
   version "7.0.5"
