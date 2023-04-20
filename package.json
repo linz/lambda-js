@@ -22,7 +22,7 @@
     "@types/pino": "^7.0.5",
     "@types/sinon": "^10.0.11",
     "ospec": "^4.1.1",
-    "sinon": "^15.0.1",
+    "sinon": "^15.0.4",
     "source-map-support": "^0.5.21"
   },
   "scripts": {
