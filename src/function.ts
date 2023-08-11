@@ -34,7 +34,8 @@ export type LambdaHttpFunc = Handler<HttpRequestEvent, HttpResponse>;
 
 const version = process.env.GIT_VERSION;
 const hash = process.env.GIT_HASH;
-const versionInfo = { version, hash };
+const buildId = process.env.BUILD_ID;
+const versionInfo = { version, hash, buildId };
 
 /** Run the request catching any errors */
 export async function runFunction<T extends LambdaRequest, K>(
