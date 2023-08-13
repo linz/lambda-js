@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ALBResult, APIGatewayProxyStructuredResultV2, CloudFrontResultResponse, Context } from 'aws-lambda';
-import o from 'ospec';
+import { describe, beforeEach, it } from "node:test";
+import assert from "node:assert";
 import sinon from 'sinon';
 import { lf } from '../function.js';
 import { LambdaRequest } from '../request.js';
@@ -16,7 +17,7 @@ function assertCloudfrontResult(x: unknown): asserts x is CloudFrontResultRespon
 function assertsApiGatewayResult(x: unknown): asserts x is APIGatewayProxyStructuredResultV2 {}
 function assertsUrlResult(x: unknown): asserts x is UrlResult {}
 
-o.spec('LambdaWrap', () => {
+describe('LambdaWrap', () => {
   const fakeContext = {} as Context;
   const sandbox = sinon.createSandbox();
 
@@ -26,13 +27,13 @@ o.spec('LambdaWrap', () => {
     req.set('setTest', req.id);
     return new LambdaHttpResponse(200, 'ok');
   }
-  o.beforeEach(() => {
+  beforeEach(() => {
     lf.Logger = fakeLog;
     requests.length = 0;
     fakeLog.logs = [];
   });
 
-  o('should handle middleware', async () => {
+  it('should handle middleware', async () => {
     const fn = lf.http(fakeLog);
     fn.router.hook('request', (req): LambdaHttpResponse | void => {
       if (req.path.includes('fail')) return new LambdaHttpResponse(500, 'Failed');
@@ -44,15 +45,15 @@ o.spec('LambdaWrap', () => {
     const ret = await fn(newReq, fakeContext);
     assertAlbResult(ret);
 
-    o(ret.statusCode).equals(200);
+    assert.equal(ret.statusCode, 200);
 
     newReq.path = '/v1/ping/fail';
     const retB = await fn(newReq, fakeContext);
     assertAlbResult(retB);
-    o(retB.statusCode).equals(500);
+    assert.equal(retB.statusCode, 500);
   });
 
-  o('should wrap all http methods', async () => {
+  it('should wrap all http methods', async () => {
     const fn = lf.http(fakeLog);
     const methods: string[] = [];
 
@@ -90,77 +91,80 @@ o.spec('LambdaWrap', () => {
       await fn(newReq, fakeContext);
     }
 
-    o(methods).deepEquals(requests);
+    assert.deepEqual(methods, requests);
   });
 
-  o('should log a metalog at the end of the request', async () => {
+  it('should log a metalog at the end of the request', async () => {
     const fn = lf.http(fakeLog);
     fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     await fn(AlbExample, fakeContext);
-    o(fakeLog.logs.length).equals(1);
+    assert.equal(fakeLog.logs.length, 1);
 
     const firstLog = fakeLog.logs[0];
-    o(firstLog['@type']).equals('report');
-    o(typeof firstLog['duration'] === 'number').equals(true);
-    o(firstLog['status']).equals(200);
-    o(firstLog['method']).equals('GET');
-    o(firstLog['path']).equals('/v1/tiles/aerial/EPSG:3857/6/3/41.json');
-    o(firstLog['id']).equals(requests[0].id);
-    o(firstLog['setTest']).equals(requests[0].id);
-    o(firstLog['correlationId']).equals(requests[0].correlationId);
+    assert.equal(firstLog['@type'], 'report');
+    assert.equal(typeof firstLog['duration'] === 'number', true);
+    assert.equal(firstLog['status'], 200);
+    assert.equal(firstLog['method'], 'GET');
+    assert.equal(firstLog['path'], '/v1/tiles/aerial/EPSG:3857/6/3/41.json');
+    assert.equal(firstLog['id'], requests[0].id);
+    assert.equal(firstLog['setTest'], requests[0].id);
+    assert.equal(firstLog['correlationId'], requests[0].correlationId);
   });
 
-  o('should respond to alb events', async () => {
+  it('should respond to alb events', async () => {
     const fn = lf.http(fakeLog);
     fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     const ret = await fn(AlbExample, fakeContext);
 
     assertAlbResult(ret);
-    o(ret.statusCode).equals(200);
-    o(ret.headers?.['content-type']).equals('application/json');
-    o(ret.headers?.['x-linz-request-id']).equals(requests[0].id);
-    o(ret.headers?.['x-linz-correlation-id']).equals(requests[0].correlationId);
-    o(ret.isBase64Encoded).equals(false);
+    assert.equal(ret.statusCode, 200);
+    assert.equal(ret.headers?.['content-type'], 'application/json');
+    assert.equal(ret.headers?.['x-linz-request-id'], requests[0].id);
+    assert.equal(ret.headers?.['x-linz-correlation-id'], requests[0].correlationId);
+    assert.equal(ret.isBase64Encoded, false);
 
     const body = JSON.parse(ret.body ?? '');
-    o(body.message).equals('ok');
-    o(body.status).equals(200);
-    o(body.id).equals(requests[0].id);
+    assert.equal(body.message, 'ok');
+    assert.equal(body.status, 200);
+    assert.equal(body.id, requests[0].id);
   });
 
-  o('should respond to cloudfront events', async () => {
+  it('should respond to cloudfront events', async () => {
     const fn = lf.http(fakeLog);
     fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     const ret = await fn(CloudfrontExample, fakeContext);
 
     assertCloudfrontResult(ret);
-    o(ret.status).equals('200');
-    o(ret.statusDescription).equals('ok');
-    o(ret.headers?.['content-type']).deepEquals([{ key: 'content-type', value: 'application/json' }]);
+    assert.equal(ret.status, '200');
+    assert.equal(ret.statusDescription, 'ok');
+    assert.deepEqual(
+      ret.headers?.['content-type'],
+      [{ key: 'content-type', value: 'application/json' }]
+    );
 
     const body = JSON.parse(ret.body ?? '');
-    o(body.message).equals('ok');
-    o(body.status).equals(200);
-    o(body.id).equals(requests[0].id);
+    assert.equal(body.message, 'ok');
+    assert.equal(body.status, 200);
+    assert.equal(body.id, requests[0].id);
   });
 
-  o('should respond to api gateway events', async () => {
+  it('should respond to api gateway events', async () => {
     const fn = lf.http(fakeLog);
     fn.router.get('/v1/tiles/:tileSet/:projection/:z/:x/:y.json', fakeLambda);
     const ret = await fn(ApiGatewayExample, fakeContext);
 
     assertsApiGatewayResult(ret);
-    o(ret.statusCode).equals(200);
-    o(ret.isBase64Encoded).equals(false);
-    o(ret.headers?.['content-type']).deepEquals('application/json');
+    assert.equal(ret.statusCode, 200);
+    assert.equal(ret.isBase64Encoded, false);
+    assert.deepEqual(ret.headers?.['content-type'], 'application/json');
 
     const body = JSON.parse(ret.body ?? '');
-    o(body.message).equals('ok');
-    o(body.status).equals(200);
-    o(body.id).equals(requests[0].id);
+    assert.equal(body.message, 'ok');
+    assert.equal(body.status, 200);
+    assert.equal(body.id, requests[0].id);
   });
 
-  o('should respond to function url events', async () => {
+  it('should respond to function url events', async () => {
     const fn = lf.http(fakeLog);
     const req = clone(UrlExample);
     req.rawPath = '/v1/tiles/aerial/EPSG:3857/6/3/41.json';
@@ -168,17 +172,17 @@ o.spec('LambdaWrap', () => {
     const ret = await fn(req, fakeContext);
 
     assertsUrlResult(ret);
-    o(ret.statusCode).equals(200);
-    o(ret.isBase64Encoded).equals(false);
-    o(ret.headers?.['content-type']).deepEquals('application/json');
+    assert.equal(ret.statusCode, 200);
+    assert.equal(ret.isBase64Encoded, false);
+    assert.deepEqual(ret.headers?.['content-type'], 'application/json');
 
     const body = JSON.parse(ret.body ?? '');
-    o(body.message).equals('ok');
-    o(body.status).equals(200);
-    o(body.id).equals(requests[0].id);
+    assert.equal(body.message, 'ok');
+    assert.equal(body.status, 200);
+    assert.equal(body.id, requests[0].id);
   });
 
-  o('should handle thrown http responses', async () => {
+  it('should handle thrown http responses', async () => {
     const fn = lf.http(fakeLog);
     fn.router.get('*', () => {
       throw new LambdaHttpResponse(400, 'Error');
@@ -186,10 +190,10 @@ o.spec('LambdaWrap', () => {
     const ret = await fn(ApiGatewayExample, fakeContext);
 
     assertsUrlResult(ret);
-    o(ret.statusCode).equals(400);
+    assert.equal(ret.statusCode, 400);
   });
 
-  o('should handle http exceptions', async () => {
+  it('should handle http exceptions', async () => {
     const fn = lf.http(fakeLog);
     fn.router.get('*', () => {
       throw new Error('Error');
@@ -197,28 +201,28 @@ o.spec('LambdaWrap', () => {
     const ret = await fn(ApiGatewayExample, fakeContext);
 
     assertsApiGatewayResult(ret);
-    o(ret.statusCode).equals(500);
+    assert.equal(ret.statusCode, 500);
   });
 
-  o('should handle exceptions', async () => {
+  it('should handle exceptions', async () => {
     const fn = lf.handler(() => {
       throw new Error('Fake');
     });
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a) => resolve(a)));
-    o(String(ret)).deepEquals('Error: Fake');
+    assert.deepEqual(String(ret), 'Error: Fake');
 
-    o(fakeLog.logs.length).equals(2);
+    assert.equal(fakeLog.logs.length, 2);
 
     const firstLog = fakeLog.logs[1];
-    o(firstLog.level).equals('error');
-    o(String(firstLog.err)).equals('Error: Fake');
-    o(firstLog.status).equals(500);
-    o(typeof firstLog.id).equals('string');
-    o(firstLog['@type']).equals('report');
-    o((firstLog.duration as number) >= 0).equals(true);
+    assert.equal(firstLog.level, 'error');
+    assert.equal(String(firstLog.err), 'Error: Fake');
+    assert.equal(firstLog.status, 500);
+    assert.equal(typeof firstLog.id, 'string');
+    assert.equal(firstLog['@type'], 'report');
+    assert.equal((firstLog.duration as number) >= 0, true);
   });
 
-  o('should handle exceptions and resolve', async () => {
+  it('should handle exceptions and resolve', async () => {
     let requestId = 'shouldHaveAValue';
     const fn = lf.handler(
       (req) => {
@@ -228,27 +232,30 @@ o.spec('LambdaWrap', () => {
       { rejectOnError: false },
     );
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve({ a, b })));
-    o(ret).deepEquals({ a: null, b: JSON.stringify({ id: requestId, status: 500, message: 'Internal Server Error' }) });
+    assert.deepEqual(
+      ret,
+      { a: null, b: JSON.stringify({ id: requestId, status: 500, message: 'Internal Server Error' }) }
+    );
   });
 
-  o('should pass body through', async () => {
+  it('should pass body through', async () => {
     const fn = lf.handler(() => {
       return { body: 'fooBar' };
     });
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
-    o(ret).equals('fooBar');
+    assert.equal(ret, 'fooBar');
 
-    o(fakeLog.logs.length).equals(2);
+    assert.equal(fakeLog.logs.length, 2);
 
     const firstLog = fakeLog.logs[1];
-    o(firstLog.err).equals(undefined);
-    o(firstLog.status).equals(200);
-    o(typeof firstLog.id).equals('string');
-    o(firstLog['@type']).equals('report');
-    o((firstLog.duration as number) >= 0).equals(true);
+    assert.equal(firstLog.err, undefined);
+    assert.equal(firstLog.status, 200);
+    assert.equal(typeof firstLog.id, 'string');
+    assert.equal(firstLog['@type'], 'report');
+    assert.equal((firstLog.duration as number) >= 0, true);
   });
 
-  o('should disable "server" header if no server name set', async () => {
+  it('should disable "server" header if no server name set', async () => {
     const serverName = lf.ServerName;
     lf.ServerName = null;
     const fn = lf.http();
@@ -257,10 +264,10 @@ o.spec('LambdaWrap', () => {
 
     lf.ServerName = serverName;
     assertsApiGatewayResult(ret);
-    o(ret.headers?.['server']).equals(undefined);
+    assert.equal(ret.headers?.['server'], undefined);
   });
 
-  o('should trace some requests', async () => {
+  it('should trace some requests', async () => {
     const logLevels = new Map<string, number>();
     function fakeFn(req: LambdaRequest): void {
       logLevels.set(req.log.level, (logLevels.get(req.log.level) ?? 0) + 1);
@@ -276,11 +283,11 @@ o.spec('LambdaWrap', () => {
     for (let i = 0; i < 100; i++) {
       await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
     }
-    o(logLevels.get('debug')).equals(50);
-    o(logLevels.get('trace')).equals(50);
+    assert.equal(logLevels.get('debug'), 50);
+    assert.equal(logLevels.get('trace'), 50);
   });
 
-  o('should trace all requests', async () => {
+  it('should trace all requests', async () => {
     process.env['TRACE_LAMBDA'] = 'true';
     const logLevels = new Map<string, number>();
     function fakeFn(req: LambdaRequest): void {
@@ -291,8 +298,8 @@ o.spec('LambdaWrap', () => {
     for (let i = 0; i < 10; i++) {
       await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
     }
-    o(logLevels.get('debug')).equals(undefined);
-    o(logLevels.get('trace')).equals(10);
+    assert.equal(logLevels.get('debug'), undefined);
+    assert.equal(logLevels.get('trace'), 10);
 
     delete process.env['TRACE_LAMBDA'];
   });

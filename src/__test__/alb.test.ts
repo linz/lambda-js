@@ -1,55 +1,56 @@
 import { Context } from 'aws-lambda';
-import o from 'ospec';
+import { describe, it } from "node:test";
+import assert from "node:assert";
 import { LambdaAlbRequest } from '../http/request.alb.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 
-o.spec('AlbGateway', () => {
+describe('AlbGateway', () => {
   const fakeContext = {} as Context;
 
-  o('should match the event', () => {
-    o(LambdaAlbRequest.is(ApiGatewayExample)).equals(false);
-    o(LambdaAlbRequest.is(CloudfrontExample)).equals(false);
-    o(LambdaAlbRequest.is(AlbExample)).equals(true);
-    o(LambdaAlbRequest.is(UrlExample)).equals(false);
+  it('should match the event', () => {
+    assert.equal(LambdaAlbRequest.is(ApiGatewayExample), false);
+    assert.equal(LambdaAlbRequest.is(CloudfrontExample), false);
+    assert.equal(LambdaAlbRequest.is(AlbExample), true);
+    assert.equal(LambdaAlbRequest.is(UrlExample), false);
   });
 
-  o('should extract headers', () => {
+  it('should extract headers', () => {
     const req = new LambdaAlbRequest(AlbExample, fakeContext, fakeLog);
 
-    o(req.header('accept-encoding')).equals('gzip');
-    o(req.header('Accept-Encoding')).equals('gzip');
+    assert.equal(req.header('accept-encoding'), 'gzip');
+    assert.equal(req.header('Accept-Encoding'), 'gzip');
   });
 
-  o('should extract methods', () => {
+  it('should extract methods', () => {
     const req = new LambdaAlbRequest(AlbExample, fakeContext, fakeLog);
-    o(req.method).equals('GET');
+    assert.equal(req.method, 'GET');
   });
 
-  o('should upper case method', () => {
+  it('should upper case method', () => {
     const newReq = clone(AlbExample);
     newReq.httpMethod = 'post';
     const req = new LambdaAlbRequest(newReq, fakeContext, fakeLog);
-    o(req.method).equals('POST');
+    assert.equal(req.method, 'POST');
   });
 
-  o('should extract query parameters', () => {
+  it('should extract query parameters', () => {
     const req = new LambdaAlbRequest(AlbExample, fakeContext, fakeLog);
-    o(req.query.get('api')).deepEquals('abc123');
-    o(req.query.getAll('api')).deepEquals(['abc123']);
+    assert.deepEqual(req.query.get('api'), 'abc123');
+    assert.deepEqual(req.query.getAll('api'), ['abc123']);
   });
 
-  o('should not be case-insensitive query parameters', () => {
+  it('should not be case-insensitive query parameters', () => {
     const newReq = clone(AlbExample);
     delete newReq.queryStringParameters!['foo'];
     newReq.queryStringParameters!['FoO'] = 'baR';
 
     const req = new LambdaAlbRequest(newReq, fakeContext, fakeLog);
-    o(req.query.get('foo')).deepEquals(null);
-    o(req.query.getAll('foo')).deepEquals([]);
+    assert.deepEqual(req.query.get('foo'), null);
+    assert.deepEqual(req.query.getAll('foo'), []);
 
-    o(req.query.get('FoO')).deepEquals('baR');
-    o(req.query.getAll('FoO')).deepEquals(['baR']);
+    assert.deepEqual(req.query.get('FoO'), 'baR');
+    assert.deepEqual(req.query.getAll('FoO'), ['baR']);
   });
 
   // ALB events don't seem to handle multiple query parameters

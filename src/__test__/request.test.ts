@@ -1,48 +1,49 @@
 import { LambdaAlbRequest } from '../http/request.alb.js';
 import { AlbExample, clone } from './examples.js';
 import { fakeLog } from './log.js';
-import o from 'ospec';
+import { describe, it } from "node:test";
+import assert from "node:assert";
 import { Context } from 'aws-lambda';
 
-o.spec('Request', () => {
+describe('Request', () => {
   const fakeContext = {} as unknown as Context;
-  o('should parse base64 body as json', () => {
+  it('should parse base64 body as json', () => {
     const req = new LambdaAlbRequest(AlbExample, fakeContext, fakeLog);
     const body = req.json();
-    o(body).deepEquals({ status: 'ok' });
+    assert.deepEqual(body, { status: 'ok' });
   });
 
-  o('should parse body as json', () => {
+  it('should parse body as json', () => {
     const obj = clone(AlbExample);
     obj.isBase64Encoded = false;
     obj.body = JSON.stringify({ status: 'ok' });
 
     const req = new LambdaAlbRequest(obj, fakeContext, fakeLog);
     const body = req.json();
-    o(body).deepEquals({ status: 'ok' });
+    assert.deepEqual(body, { status: 'ok' });
   });
 
-  o('should throw if content-type is not application/json', () => {
+  it('should throw if content-type is not application/json', () => {
     const obj = clone(AlbExample);
     obj.headers!['content-type'] = 'text/plain';
 
     const req = new LambdaAlbRequest(obj, fakeContext, fakeLog);
-    o(() => req.json()).throws(Error);
+    assert.throws(() => req.json(), Error);
   });
 
-  o('should throw if body is empty', () => {
+  it('should throw if body is empty', () => {
     const obj = clone(AlbExample);
     obj.body = null;
 
     const req = new LambdaAlbRequest(obj, fakeContext, fakeLog);
-    o(() => req.json()).throws(Error);
+    assert.throws(() => req.json(), Error);
   });
 
-  o('should throw if body is not json', () => {
+  it('should throw if body is not json', () => {
     const obj = clone(AlbExample);
     obj.body = 'text message';
 
     const req = new LambdaAlbRequest(obj, fakeContext, fakeLog);
-    o(() => req.json()).throws(Error);
+    assert.throws(() => req.json(), Error);
   });
 });
