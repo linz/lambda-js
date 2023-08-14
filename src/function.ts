@@ -1,4 +1,4 @@
-import { Callback, Context, Handler } from 'aws-lambda';
+import { Callback, CloudFrontRequestEventRecord, Context, Handler } from 'aws-lambda';
 import { pino } from 'pino';
 import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
 import { LambdaAlbRequest } from './http/request.alb.js';
@@ -137,7 +137,9 @@ export class lf {
     if (LambdaAlbRequest.is(req)) return new LambdaAlbRequest(req, ctx, log);
     if (LambdaUrlRequest.is(req)) return new LambdaUrlRequest(req, ctx, log);
     if (LambdaApiGatewayRequest.is(req)) return new LambdaApiGatewayRequest(req, ctx, log);
-    if (LambdaCloudFrontRequest.is(req)) return new LambdaCloudFrontRequest(req, ctx, log);
+    if (LambdaCloudFrontRequest.is(req)) {
+      return new LambdaCloudFrontRequest(req as { Records: [CloudFrontRequestEventRecord] }, ctx, log);
+    }
     throw new Error('Request is not a a ALB, ApiGateway or Cloudfront event');
   }
 

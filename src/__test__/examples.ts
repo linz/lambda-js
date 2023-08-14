@@ -1,10 +1,10 @@
-import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent, Context } from 'aws-lambda';
+import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEventRecord, Context } from 'aws-lambda';
+import assert from 'node:assert';
 import { LambdaAlbRequest } from '../http/request.alb.js';
 import { LambdaApiGatewayRequest } from '../http/request.api.gateway.js';
 import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
 import { LambdaUrlRequest, UrlEvent } from '../http/request.url.js';
 import { fakeLog } from './log.js';
-import assert from 'node:assert';
 
 export const ApiGatewayExample: APIGatewayProxyEvent = {
   body: 'eyJ0ZXN0IjoiYm9keSJ9',
@@ -97,7 +97,7 @@ export const ApiGatewayExample: APIGatewayProxyEvent = {
   },
 };
 
-export const CloudfrontExample: CloudFrontRequestEvent = {
+export const CloudfrontExample: { Records: [CloudFrontRequestEventRecord] } = {
   Records: [
     {
       cf: {
