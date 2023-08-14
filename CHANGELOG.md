@@ -1,4 +1,21 @@
 <a name="3.2.1"></a>
+## [4.1.0](https://github.com/linz/lambda-js/compare/v4.0.0...v4.1.0) (2023-08-14)
+
+
+### Features
+
+* **deps:** bump find-my-way from 7.0.1 to 7.3.1 ([#225](https://github.com/linz/lambda-js/issues/225)) ([cb14e4d](https://github.com/linz/lambda-js/commit/cb14e4dc2d7573c00f3008353ee9a678c69f49ff))
+* **deps:** bump pino from 8.4.1 to 8.7.0 ([#232](https://github.com/linz/lambda-js/issues/232)) ([81b8e81](https://github.com/linz/lambda-js/commit/81b8e81364ba24e4daa4da8d3cbc6fd48d88102d))
+* **deps:** bump pino from 8.7.0 to 8.8.0 ([#255](https://github.com/linz/lambda-js/issues/255)) ([a6291bc](https://github.com/linz/lambda-js/commit/a6291bc0efdf5ee9628dc6d6ff5d57596f11eb7e))
+* **deps:** bump pino from 8.8.0 to 8.10.0 ([#266](https://github.com/linz/lambda-js/issues/266)) ([49ae385](https://github.com/linz/lambda-js/commit/49ae385646a994048cb5b6c506e4c27b0d63ac77))
+* include github buildId in lambda messages ([60e5a76](https://github.com/linz/lambda-js/commit/60e5a7612f259ac3961e7ab342d68778e2af03f2))
+
+
+### Bug Fixes
+
+* allow custom response typings ([#344](https://github.com/linz/lambda-js/issues/344)) ([6a8e26a](https://github.com/linz/lambda-js/commit/6a8e26af2294c95171ca2ede0a22159e39fdbd5c))
+* upgrade to stricter typescript ([#345](https://github.com/linz/lambda-js/issues/345)) ([1f862bc](https://github.com/linz/lambda-js/commit/1f862bc626e6204a445f5cf010d5a581a7a28a13))
+
 ## [4.0.0](https://github.com/linz/lambda-js/compare/v3.2.2...v4.0.0) (2022-08-18)
 
 
