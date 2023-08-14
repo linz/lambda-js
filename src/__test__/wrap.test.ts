@@ -106,8 +106,8 @@ describe('LambdaWrap', () => {
     assert.equal(fakeLog.logs.length, 1);
 
     const firstLog = fakeLog.logs[0];
-    assert.ok(firstLog)
-    assert.ok(requests[0])
+    assert.ok(firstLog);
+    assert.ok(requests[0]);
     assert.equal(firstLog['@type'], 'report');
     assert.equal(typeof firstLog['duration'] === 'number', true);
     assert.equal(firstLog['status'], 200);
@@ -124,7 +124,7 @@ describe('LambdaWrap', () => {
     const ret = await fn(AlbExample, fakeContext);
 
     assertAlbResult(ret);
-    assert.ok(requests[0])
+    assert.ok(requests[0]);
     assert.equal(ret.statusCode, 200);
     assert.equal(ret.headers?.['content-type'], 'application/json');
     assert.equal(ret.headers?.['x-linz-request-id'], requests[0].id);
@@ -219,7 +219,7 @@ describe('LambdaWrap', () => {
     assert.equal(fakeLog.logs.length, 2);
 
     const firstLog = fakeLog.logs[1];
-    assert.ok(firstLog)
+    assert.ok(firstLog);
     assert.equal(firstLog['level'], 'error');
     assert.equal(String(firstLog['err']), 'Error: Fake');
     assert.equal(firstLog['status'], 500);

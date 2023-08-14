@@ -4,6 +4,7 @@ import { LambdaApiGatewayRequest } from '../http/request.api.gateway.js';
 import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
 import { LambdaUrlRequest, UrlEvent } from '../http/request.url.js';
 import { fakeLog } from './log.js';
+import assert from 'node:assert';
 
 export const ApiGatewayExample: APIGatewayProxyEvent = {
   body: 'eyJ0ZXN0IjoiYm9keSJ9',
@@ -244,7 +245,8 @@ export function newRequestCloudFront<T extends Record<string, string>>(
   query: string,
 ): LambdaCloudFrontRequest<T> {
   const example = clone(CloudfrontExample);
-  example.Records[0]!.cf.request.uri = encodeURI(path);
-  example.Records[0]!.cf.request.querystring = '?' + query;
+  assert.ok(example.Records[0]);
+  example.Records[0].cf.request.uri = encodeURI(path);
+  example.Records[0].cf.request.querystring = '?' + query;
   return new LambdaCloudFrontRequest(example, fakeContext, fakeLog) as LambdaCloudFrontRequest<T>;
 }

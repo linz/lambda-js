@@ -1,4 +1,4 @@
-import { CloudFrontRequestEvent, CloudFrontRequestResult } from 'aws-lambda';
+import { CloudFrontRequestEvent, CloudFrontRequestEventRecord, CloudFrontRequestResult } from 'aws-lambda';
 import { URLSearchParams } from 'url';
 import { isRecord } from '../request.js';
 import { LambdaHttpRequest } from './request.http.js';
@@ -6,7 +6,9 @@ import { LambdaHttpResponse } from './response.http.js';
 
 export class LambdaCloudFrontRequest<T extends Record<string, string>> extends LambdaHttpRequest<
   T,
-  CloudFrontRequestEvent,
+  // CloudFront events can only ever have one request
+  // https://stackoverflow.com/questions/76835086/can-lambdaedge-events-arrive-in-batches
+  { Records: [CloudFrontRequestEventRecord] },
   CloudFrontRequestResult
 > {
   static is(x: unknown): x is CloudFrontRequestEvent {
@@ -20,11 +22,11 @@ export class LambdaCloudFrontRequest<T extends Record<string, string>> extends L
   toResponse(res: LambdaHttpResponse): CloudFrontRequestResult {
     // Continue
     if (res.status === 100 && this.event != null) {
-      const outRequest = this.event.Records[0]!.cf.request;
+      const outRequest = this.event.Records[0]?.cf.request;
       for (const [key, value] of res.headers) {
         outRequest.headers[key.toLowerCase()] = [{ key, value: String(value) }];
       }
-      return this.event.Records[0]!.cf.request;
+      return this.event.Records[0].cf.request;
     }
 
     return {
@@ -44,23 +46,25 @@ export class LambdaCloudFrontRequest<T extends Record<string, string>> extends L
   }
 
   loadHeaders(): void {
-    for (const [key, value] of Object.entries(this.event.Records[0]!.cf.request.headers)) {
-      this.headers.set(key.toLowerCase(), value[0]!.value);
+    for (const [key, value] of Object.entries(this.event.Records[0].cf.request.headers)) {
+      const val = value[0]?.value;
+      if (val == null) continue;
+      this.headers.set(key.toLowerCase(), val);
     }
   }
 
   loadQueryString(): URLSearchParams {
-    const query = this.event.Records[0]!.cf.request.querystring;
+    const query = this.event.Records[0].cf.request.querystring;
     if (query == null) return new URLSearchParams();
     return new URLSearchParams(query);
   }
 
   get path(): string {
-    return this.event.Records[0]!.cf.request.uri;
+    return this.event.Records[0].cf.request.uri;
   }
 
   get method(): string {
-    return this.event.Records[0]!.cf.request.method.toUpperCase();
+    return this.event.Records[0].cf.request.method.toUpperCase();
   }
 
   get body(): string | null {

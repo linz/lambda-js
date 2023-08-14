@@ -1,4 +1,6 @@
 {
   "extends": "@linzjs/style/tsconfig.base.json",
-  "compilerOptions": {}
+  "compilerOptions": {
+    "outDir": "build"
+  }
 }
