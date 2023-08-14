@@ -8,4 +8,3 @@ jobs:
 
     steps:
       - uses: linz/action-typescript@v3
-
