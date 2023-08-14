@@ -152,7 +152,7 @@ export class lf {
    * @param logger optional logger to use for the request @see lf.Logger
    */
   public static handler<TEvent, TResult = unknown>(
-    fn: LambdaWrappedFunction<TEvent>,
+    fn: LambdaWrappedFunction<TEvent, TResult>,
     options?: Partial<LambdaHandlerOptions>,
     logger?: LogType,
   ): LambdaHandler<TEvent, TResult> {
@@ -176,8 +176,10 @@ export class lf {
             if (req.logContext['err']) return callback(req.logContext['err'] as Error);
             if (res.status > 399) return callback(req.toResponse(res) as unknown as string);
           }
+          return callback(null, req.toResponse(res));
         }
-        return callback(null, req.toResponse(res));
+
+        return callback(null, res);
       });
     }
     return handler;
