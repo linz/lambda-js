@@ -20,7 +20,7 @@ export class LambdaRequest<T = unknown, K = unknown> {
   public log: LogType;
 
   /** Number of of requests served by this lambda */
-  public requestCount: number;
+  public requestCount = 0;
 
   /** Is this the first request for this lambda function */
   public get isColdStart(): boolean {

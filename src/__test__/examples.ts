@@ -1,4 +1,5 @@
-import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEvent, Context } from 'aws-lambda';
+import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEventRecord, Context } from 'aws-lambda';
+import assert from 'node:assert';
 import { LambdaAlbRequest } from '../http/request.alb.js';
 import { LambdaApiGatewayRequest } from '../http/request.api.gateway.js';
 import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
@@ -96,7 +97,7 @@ export const ApiGatewayExample: APIGatewayProxyEvent = {
   },
 };
 
-export const CloudfrontExample: CloudFrontRequestEvent = {
+export const CloudfrontExample: { Records: [CloudFrontRequestEventRecord] } = {
   Records: [
     {
       cf: {
@@ -244,6 +245,7 @@ export function newRequestCloudFront<T extends Record<string, string>>(
   query: string,
 ): LambdaCloudFrontRequest<T> {
   const example = clone(CloudfrontExample);
+  assert.ok(example.Records[0]);
   example.Records[0].cf.request.uri = encodeURI(path);
   example.Records[0].cf.request.querystring = '?' + query;
   return new LambdaCloudFrontRequest(example, fakeContext, fakeLog) as LambdaCloudFrontRequest<T>;

@@ -30,11 +30,11 @@ export abstract class LambdaHttpRequest<
   Request extends HttpRequestEvent = HttpRequestEvent,
   Response extends HttpResponse = HttpResponse,
 > extends LambdaRequest<Request, Response> {
-  public headers = new Map<string, string>();
+  public override headers = new Map<string, string>();
   public correlationId: string;
-  public params: Rt['Params'];
+  public params: Rt['Params'] = {};
 
-  private _isHeadersLoaded: boolean;
+  private _isHeadersLoaded = false;
 
   /** Should this request be aborted */
   public abort: AbortController = new AbortController();
@@ -72,7 +72,7 @@ export abstract class LambdaHttpRequest<
     }
   }
 
-  abstract toResponse(res: LambdaHttpResponse): Response;
+  abstract override toResponse(res: LambdaHttpResponse): Response;
   abstract loadHeaders(): void;
   abstract loadQueryString(): URLSearchParams;
 
@@ -91,7 +91,7 @@ export abstract class LambdaHttpRequest<
   /** Is the body base64 encoded */
   abstract isBase64Encoded: boolean;
 
-  _query: URLSearchParams;
+  _query?: URLSearchParams;
   /**
    * Query string parameters
    *

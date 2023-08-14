@@ -18,10 +18,10 @@ import { fakeLog } from './log.js';
 import { HttpMethods } from '../http/router.js';
 import { UrlResult } from '../http/request.url.js';
 
-function assertAlbResult(x: unknown): asserts x is ALBResult {}
-function assertCloudfrontResult(x: unknown): asserts x is CloudFrontResultResponse {}
-function assertsApiGatewayResult(x: unknown): asserts x is APIGatewayProxyStructuredResultV2 {}
-function assertsUrlResult(x: unknown): asserts x is UrlResult {}
+function assertAlbResult(_x: unknown): asserts _x is ALBResult {}
+function assertCloudfrontResult(_x: unknown): asserts _x is CloudFrontResultResponse {}
+function assertsApiGatewayResult(_x: unknown): asserts _x is APIGatewayProxyStructuredResultV2 {}
+function assertsUrlResult(_x: unknown): asserts _x is UrlResult {}
 
 describe('LambdaWrap', () => {
   const fakeContext = {} as Context;
@@ -106,6 +106,8 @@ describe('LambdaWrap', () => {
     assert.equal(fakeLog.logs.length, 1);
 
     const firstLog = fakeLog.logs[0];
+    assert.ok(firstLog);
+    assert.ok(requests[0]);
     assert.equal(firstLog['@type'], 'report');
     assert.equal(typeof firstLog['duration'] === 'number', true);
     assert.equal(firstLog['status'], 200);
@@ -122,6 +124,7 @@ describe('LambdaWrap', () => {
     const ret = await fn(AlbExample, fakeContext);
 
     assertAlbResult(ret);
+    assert.ok(requests[0]);
     assert.equal(ret.statusCode, 200);
     assert.equal(ret.headers?.['content-type'], 'application/json');
     assert.equal(ret.headers?.['x-linz-request-id'], requests[0].id);
@@ -147,7 +150,7 @@ describe('LambdaWrap', () => {
     const body = JSON.parse(ret.body ?? '');
     assert.equal(body.message, 'ok');
     assert.equal(body.status, 200);
-    assert.equal(body.id, requests[0].id);
+    assert.equal(body.id, requests[0]?.id);
   });
 
   it('should respond to api gateway events', async () => {
@@ -163,7 +166,7 @@ describe('LambdaWrap', () => {
     const body = JSON.parse(ret.body ?? '');
     assert.equal(body.message, 'ok');
     assert.equal(body.status, 200);
-    assert.equal(body.id, requests[0].id);
+    assert.equal(body.id, requests[0]?.id);
   });
 
   it('should respond to function url events', async () => {
@@ -181,7 +184,7 @@ describe('LambdaWrap', () => {
     const body = JSON.parse(ret.body ?? '');
     assert.equal(body.message, 'ok');
     assert.equal(body.status, 200);
-    assert.equal(body.id, requests[0].id);
+    assert.equal(body.id, requests[0]?.id);
   });
 
   it('should handle thrown http responses', async () => {
@@ -216,12 +219,13 @@ describe('LambdaWrap', () => {
     assert.equal(fakeLog.logs.length, 2);
 
     const firstLog = fakeLog.logs[1];
-    assert.equal(firstLog.level, 'error');
-    assert.equal(String(firstLog.err), 'Error: Fake');
-    assert.equal(firstLog.status, 500);
-    assert.equal(typeof firstLog.id, 'string');
+    assert.ok(firstLog);
+    assert.equal(firstLog['level'], 'error');
+    assert.equal(String(firstLog['err']), 'Error: Fake');
+    assert.equal(firstLog['status'], 500);
+    assert.equal(typeof firstLog['id'], 'string');
     assert.equal(firstLog['@type'], 'report');
-    assert.equal((firstLog.duration as number) >= 0, true);
+    assert.equal((firstLog['duration'] as number) >= 0, true);
   });
 
   it('should handle exceptions and resolve', async () => {
@@ -244,17 +248,18 @@ describe('LambdaWrap', () => {
     const fn = lf.handler(() => {
       return 'fooBar';
     });
-    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
+    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (_err, b) => resolve(b)));
     assert.equal(ret, 'fooBar');
 
     assert.equal(fakeLog.logs.length, 2);
 
     const firstLog = fakeLog.logs[1];
-    assert.equal(firstLog.err, undefined);
-    assert.equal(firstLog.status, 200);
-    assert.equal(typeof firstLog.id, 'string');
+    assert.ok(firstLog);
+    assert.equal(firstLog['err'], undefined);
+    assert.equal(firstLog['status'], 200);
+    assert.equal(typeof firstLog['id'], 'string');
     assert.equal(firstLog['@type'], 'report');
-    assert.equal((firstLog.duration as number) >= 0, true);
+    assert.equal((firstLog['duration'] as number) >= 0, true);
   });
 
   it('should disable "server" header if no server name set', async () => {
@@ -283,7 +288,7 @@ describe('LambdaWrap', () => {
 
     const fn = lf.handler(fakeFn, { tracePercent: 0.5 });
     for (let i = 0; i < 100; i++) {
-      await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
+      await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (_err, b) => resolve(b)));
     }
     assert.equal(logLevels.get('debug'), 50);
     assert.equal(logLevels.get('trace'), 50);
@@ -298,7 +303,7 @@ describe('LambdaWrap', () => {
 
     const fn = lf.handler(fakeFn, { tracePercent: 0.1 });
     for (let i = 0; i < 10; i++) {
-      await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
+      await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (_err, b) => resolve(b)));
     }
     assert.equal(logLevels.get('debug'), undefined);
     assert.equal(logLevels.get('trace'), 10);
@@ -319,11 +324,11 @@ describe('LambdaWrap', () => {
 
     const fn = lf.handler<KinesisStreamEvent, KinesisStreamBatchResponse | void>(fakeFn);
 
-    const emptyResponse = await new Promise((resolve) => fn({ Records: [] }, fakeContext, (a, b) => resolve(b)));
+    const emptyResponse = await new Promise((resolve) => fn({ Records: [] }, fakeContext, (_err, b) => resolve(b)));
     assert.deepEqual(emptyResponse, undefined);
 
     const actualResponse = await new Promise((resolve) =>
-      fn({ Records: [{ kinesis: { sequenceNumber: '123' } }] } as KinesisStreamEvent, fakeContext, (a, b) =>
+      fn({ Records: [{ kinesis: { sequenceNumber: '123' } }] } as KinesisStreamEvent, fakeContext, (_err, b) =>
         resolve(b),
       ),
     );

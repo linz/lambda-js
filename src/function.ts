@@ -1,5 +1,5 @@
-import { Callback, Context, Handler } from 'aws-lambda';
-import pino from 'pino';
+import { Callback, CloudFrontRequestEventRecord, Context, Handler } from 'aws-lambda';
+import { pino } from 'pino';
 import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
 import { LambdaAlbRequest } from './http/request.alb.js';
 import { LambdaApiGatewayRequest } from './http/request.api.gateway.js';
@@ -32,9 +32,9 @@ export interface LambdaWrappedFunction<T, K = LambdaResponse | void> {
 export type LambdaWrappedFunctionHttp = (req: LambdaHttpRequest) => LambdaHttpResponse | Promise<LambdaHttpResponse>;
 export type LambdaHttpFunc = Handler<HttpRequestEvent, HttpResponse>;
 
-const version = process.env.GIT_VERSION;
-const hash = process.env.GIT_HASH;
-const buildId = process.env.BUILD_ID;
+const version = process.env['GIT_VERSION'];
+const hash = process.env['GIT_HASH'];
+const buildId = process.env['BUILD_ID'];
 const versionInfo = { version, hash, buildId };
 
 /** Run the request catching any errors */
@@ -137,7 +137,9 @@ export class lf {
     if (LambdaAlbRequest.is(req)) return new LambdaAlbRequest(req, ctx, log);
     if (LambdaUrlRequest.is(req)) return new LambdaUrlRequest(req, ctx, log);
     if (LambdaApiGatewayRequest.is(req)) return new LambdaApiGatewayRequest(req, ctx, log);
-    if (LambdaCloudFrontRequest.is(req)) return new LambdaCloudFrontRequest(req, ctx, log);
+    if (LambdaCloudFrontRequest.is(req)) {
+      return new LambdaCloudFrontRequest(req as { Records: [CloudFrontRequestEventRecord] }, ctx, log);
+    }
     throw new Error('Request is not a a ALB, ApiGateway or Cloudfront event');
   }
 
@@ -161,7 +163,7 @@ export class lf {
       const req = new LambdaRequest<TEvent, TResult>(event, context, logger ?? lf.Logger);
       req.requestCount = lf.requestCount++;
       if (opts.tracePercent > 0 && Math.random() < opts.tracePercent) req.log.level = 'trace';
-      if (process.env.TRACE_LAMBDA) req.log.level = 'trace';
+      if (process.env['TRACE_LAMBDA']) req.log.level = 'trace';
 
       req.log.trace({ event }, 'Lambda:Start');
 

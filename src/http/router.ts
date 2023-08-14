@@ -43,7 +43,7 @@ export class Router {
   }
 
   register<T extends RequestTypes>(method: HttpMethods, path: string, fn: Route<T>): void {
-    this.router.on(method, path, (req: unknown, res, params) => {
+    this.router.on(method, path, (req: unknown, _res, params) => {
       if (!(req instanceof LambdaHttpRequest)) return new LambdaHttpResponse(500, 'Internal server error');
       req.params = params;
       return runFunction(req, fn);

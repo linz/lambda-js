@@ -1,8 +1,8 @@
-import { CloudFrontRequestEvent, Context } from 'aws-lambda';
-import { describe, it } from 'node:test';
+import { Context } from 'aws-lambda';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
 import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
-import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
+import { AlbExample, ApiGatewayExample, CloudfrontExample, UrlExample, clone } from './examples.js';
 import { fakeLog } from './log.js';
 
 describe('CloudFront', () => {
@@ -28,7 +28,7 @@ describe('CloudFront', () => {
   });
 
   it('should upper case method', () => {
-    const newReq = clone(CloudfrontExample) as CloudFrontRequestEvent;
+    const newReq = clone(CloudfrontExample);
     const cfReq = newReq.Records[0].cf.request as unknown as Record<string, unknown>;
     cfReq['method'] = 'post';
     const req = new LambdaCloudFrontRequest(newReq, fakeContext, fakeLog);
@@ -43,7 +43,7 @@ describe('CloudFront', () => {
 
   it('should not be case-insensitive query parameters', () => {
     const newReq = clone(CloudfrontExample);
-    newReq.Records[0].cf.request.querystring = `?FoO=baR`;
+    newReq.Records[0]!.cf.request.querystring = `?FoO=baR`;
     const req = new LambdaCloudFrontRequest(newReq, fakeContext, fakeLog);
     assert.deepEqual(req.query.get('foo'), null);
     assert.deepEqual(req.query.getAll('foo'), []);
@@ -53,7 +53,7 @@ describe('CloudFront', () => {
 
   it('should extract all query parameters', () => {
     const newReq = clone(CloudfrontExample);
-    newReq.Records[0].cf.request.querystring = `?foo=foo&foo=bar`;
+    newReq.Records[0]!.cf.request.querystring = `?foo=foo&foo=bar`;
     const req = new LambdaCloudFrontRequest(newReq, fakeContext, fakeLog);
     assert.deepEqual(req.query.get('foo'), 'foo');
     assert.deepEqual(req.query.getAll('foo'), ['foo', 'bar']);

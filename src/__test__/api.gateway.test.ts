@@ -52,7 +52,7 @@ describe('ApiGateway', () => {
 
   it('should extract all query parameters', () => {
     const newReq = clone(ApiGatewayExample);
-    newReq.multiValueQueryStringParameters!.foo = ['foo', 'bar'];
+    newReq.multiValueQueryStringParameters!['foo'] = ['foo', 'bar'];
     const req = new LambdaApiGatewayRequest(newReq, fakeContext, fakeLog);
     assert.deepEqual(req.query.get('foo'), 'foo');
     assert.deepEqual(req.query.getAll('foo'), ['foo', 'bar']);
