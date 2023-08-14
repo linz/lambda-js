@@ -1,5 +1,12 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { ALBResult, APIGatewayProxyStructuredResultV2, CloudFrontResultResponse, Context } from 'aws-lambda';
+import {
+  ALBResult,
+  APIGatewayProxyStructuredResultV2,
+  CloudFrontResultResponse,
+  Context,
+  KinesisStreamBatchResponse,
+  KinesisStreamEvent,
+} from 'aws-lambda';
 import { describe, beforeEach, it } from 'node:test';
 import assert from 'node:assert';
 import { lf } from '../function.js';
@@ -235,7 +242,7 @@ describe('LambdaWrap', () => {
 
   it('should pass body through', async () => {
     const fn = lf.handler(() => {
-      return { body: 'fooBar' };
+      return 'fooBar';
     });
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve(b)));
     assert.equal(ret, 'fooBar');
@@ -297,5 +304,29 @@ describe('LambdaWrap', () => {
     assert.equal(logLevels.get('trace'), 10);
 
     delete process.env['TRACE_LAMBDA'];
+  });
+
+  it('should allow straight responses', async () => {
+    function fakeFn(req: LambdaRequest<KinesisStreamEvent>): KinesisStreamBatchResponse | void {
+      if (req.event.Records.length === 0) return;
+
+      return {
+        batchItemFailures: req.event.Records.map((f) => {
+          return { itemIdentifier: f.kinesis.sequenceNumber };
+        }),
+      };
+    }
+
+    const fn = lf.handler<KinesisStreamEvent, KinesisStreamBatchResponse | void>(fakeFn);
+
+    const emptyResponse = await new Promise((resolve) => fn({ Records: [] }, fakeContext, (a, b) => resolve(b)));
+    assert.deepEqual(emptyResponse, undefined);
+
+    const actualResponse = await new Promise((resolve) =>
+      fn({ Records: [{ kinesis: { sequenceNumber: '123' } }] } as KinesisStreamEvent, fakeContext, (a, b) =>
+        resolve(b),
+      ),
+    );
+    assert.deepEqual(actualResponse, { batchItemFailures: [{ itemIdentifier: '123' }] });
   });
 });
