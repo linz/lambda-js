@@ -1,63 +1,64 @@
 import { Context } from 'aws-lambda';
-import o from 'ospec';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
 import { LambdaApiGatewayRequest } from '../http/request.api.gateway.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 
-o.spec('ApiGateway', () => {
+describe('ApiGateway', () => {
   const fakeContext = {} as Context;
 
-  o('should match the event', () => {
-    o(LambdaApiGatewayRequest.is(CloudfrontExample)).equals(false);
-    o(LambdaApiGatewayRequest.is(AlbExample)).equals(false);
-    o(LambdaApiGatewayRequest.is(ApiGatewayExample)).equals(true);
-    o(LambdaApiGatewayRequest.is(UrlExample)).equals(false);
+  it('should match the event', () => {
+    assert.equal(LambdaApiGatewayRequest.is(CloudfrontExample), false);
+    assert.equal(LambdaApiGatewayRequest.is(AlbExample), false);
+    assert.equal(LambdaApiGatewayRequest.is(ApiGatewayExample), true);
+    assert.equal(LambdaApiGatewayRequest.is(UrlExample), false);
   });
 
-  o('should extract headers', () => {
+  it('should extract headers', () => {
     const req = new LambdaApiGatewayRequest(ApiGatewayExample, fakeContext, fakeLog);
 
-    o(req.header('Cache-Control')).equals('max-age=0');
-    o(req.header('CaChE-CONTROL')).equals('max-age=0');
+    assert.equal(req.header('Cache-Control'), 'max-age=0');
+    assert.equal(req.header('CaChE-CONTROL'), 'max-age=0');
   });
 
-  o('should extract methods', () => {
+  it('should extract methods', () => {
     const req = new LambdaApiGatewayRequest(ApiGatewayExample, fakeContext, fakeLog);
-    o(req.method).equals('GET');
+    assert.equal(req.method, 'GET');
   });
 
-  o('should upper case method', () => {
+  it('should upper case method', () => {
     const newReq = clone(ApiGatewayExample);
     newReq.httpMethod = 'post';
     const req = new LambdaApiGatewayRequest(newReq, fakeContext, fakeLog);
-    o(req.method).equals('POST');
+    assert.equal(req.method, 'POST');
   });
 
-  o('should extract query parameters', () => {
+  it('should extract query parameters', () => {
     const req = new LambdaApiGatewayRequest(ApiGatewayExample, fakeContext, fakeLog);
-    o(req.query.get('foo')).deepEquals('bar');
-    o(req.query.getAll('foo')).deepEquals(['bar']);
+    assert.deepEqual(req.query.get('foo'), 'bar');
+    assert.deepEqual(req.query.getAll('foo'), ['bar']);
   });
 
-  o('should be case-insensitive query parameters', () => {
+  it('should be case-insensitive query parameters', () => {
     const obj = clone(ApiGatewayExample);
     delete obj.multiValueQueryStringParameters!['foo'];
     obj.multiValueQueryStringParameters!['FoO'] = ['bar'];
 
     const req = new LambdaApiGatewayRequest(ApiGatewayExample, fakeContext, fakeLog);
-    o(req.query.get('foo')).deepEquals('bar');
-    o(req.query.getAll('foo')).deepEquals(['bar']);
+    assert.deepEqual(req.query.get('foo'), 'bar');
+    assert.deepEqual(req.query.getAll('foo'), ['bar']);
   });
 
-  o('should extract all query parameters', () => {
+  it('should extract all query parameters', () => {
     const newReq = clone(ApiGatewayExample);
     newReq.multiValueQueryStringParameters!.foo = ['foo', 'bar'];
     const req = new LambdaApiGatewayRequest(newReq, fakeContext, fakeLog);
-    o(req.query.get('foo')).deepEquals('foo');
-    o(req.query.getAll('foo')).deepEquals(['foo', 'bar']);
+    assert.deepEqual(req.query.get('foo'), 'foo');
+    assert.deepEqual(req.query.getAll('foo'), ['foo', 'bar']);
   });
 
-  o('should not be case-insensitive query parameters', () => {
+  it('should not be case-insensitive query parameters', () => {
     const newReq = clone(ApiGatewayExample);
     delete newReq.queryStringParameters!['foo'];
     delete newReq.multiValueQueryStringParameters!['foo'];
@@ -66,10 +67,10 @@ o.spec('ApiGateway', () => {
     newReq.multiValueQueryStringParameters!['FoO'] = ['baR'];
 
     const req = new LambdaApiGatewayRequest(newReq, fakeContext, fakeLog);
-    o(req.query.get('foo')).deepEquals(null);
-    o(req.query.getAll('foo')).deepEquals([]);
+    assert.deepEqual(req.query.get('foo'), null);
+    assert.deepEqual(req.query.getAll('foo'), []);
 
-    o(req.query.get('FoO')).deepEquals('baR');
-    o(req.query.getAll('FoO')).deepEquals(['baR']);
+    assert.deepEqual(req.query.get('FoO'), 'baR');
+    assert.deepEqual(req.query.getAll('FoO'), ['baR']);
   });
 });

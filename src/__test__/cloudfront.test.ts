@@ -1,60 +1,61 @@
 import { CloudFrontRequestEvent, Context } from 'aws-lambda';
-import o from 'ospec';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
 import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 
-o.spec('CloudFront', () => {
+describe('CloudFront', () => {
   const fakeContext = {} as Context;
 
-  o('should match the event', () => {
-    o(LambdaCloudFrontRequest.is(CloudfrontExample)).equals(true);
-    o(LambdaCloudFrontRequest.is(AlbExample)).equals(false);
-    o(LambdaCloudFrontRequest.is(ApiGatewayExample)).equals(false);
-    o(LambdaCloudFrontRequest.is(UrlExample)).equals(false);
+  it('should match the event', () => {
+    assert.equal(LambdaCloudFrontRequest.is(CloudfrontExample), true);
+    assert.equal(LambdaCloudFrontRequest.is(AlbExample), false);
+    assert.equal(LambdaCloudFrontRequest.is(ApiGatewayExample), false);
+    assert.equal(LambdaCloudFrontRequest.is(UrlExample), false);
   });
 
-  o('should extract headers', () => {
+  it('should extract headers', () => {
     const req = new LambdaCloudFrontRequest(CloudfrontExample, fakeContext, fakeLog);
 
-    o(req.header('Host')).equals('d123.cf.net');
-    o(req.header('hOST')).equals('d123.cf.net');
+    assert.equal(req.header('Host'), 'd123.cf.net');
+    assert.equal(req.header('hOST'), 'd123.cf.net');
   });
 
-  o('should extract methods', () => {
+  it('should extract methods', () => {
     const req = new LambdaCloudFrontRequest(CloudfrontExample, fakeContext, fakeLog);
-    o(req.method).equals('GET');
+    assert.equal(req.method, 'GET');
   });
 
-  o('should upper case method', () => {
+  it('should upper case method', () => {
     const newReq = clone(CloudfrontExample) as CloudFrontRequestEvent;
     const cfReq = newReq.Records[0].cf.request as unknown as Record<string, unknown>;
     cfReq['method'] = 'post';
     const req = new LambdaCloudFrontRequest(newReq, fakeContext, fakeLog);
-    o(req.method).equals('POST');
+    assert.equal(req.method, 'POST');
   });
 
-  o('should extract query parameters', () => {
+  it('should extract query parameters', () => {
     const req = new LambdaCloudFrontRequest(CloudfrontExample, fakeContext, fakeLog);
-    o(req.query.get('foo')).deepEquals('bar');
-    o(req.query.getAll('foo')).deepEquals(['bar']);
+    assert.deepEqual(req.query.get('foo'), 'bar');
+    assert.deepEqual(req.query.getAll('foo'), ['bar']);
   });
 
-  o('should not be case-insensitive query parameters', () => {
+  it('should not be case-insensitive query parameters', () => {
     const newReq = clone(CloudfrontExample);
     newReq.Records[0].cf.request.querystring = `?FoO=baR`;
     const req = new LambdaCloudFrontRequest(newReq, fakeContext, fakeLog);
-    o(req.query.get('foo')).deepEquals(null);
-    o(req.query.getAll('foo')).deepEquals([]);
-    o(req.query.get('FoO')).deepEquals('baR');
-    o(req.query.getAll('FoO')).deepEquals(['baR']);
+    assert.deepEqual(req.query.get('foo'), null);
+    assert.deepEqual(req.query.getAll('foo'), []);
+    assert.deepEqual(req.query.get('FoO'), 'baR');
+    assert.deepEqual(req.query.getAll('FoO'), ['baR']);
   });
 
-  o('should extract all query parameters', () => {
+  it('should extract all query parameters', () => {
     const newReq = clone(CloudfrontExample);
     newReq.Records[0].cf.request.querystring = `?foo=foo&foo=bar`;
     const req = new LambdaCloudFrontRequest(newReq, fakeContext, fakeLog);
-    o(req.query.get('foo')).deepEquals('foo');
-    o(req.query.getAll('foo')).deepEquals(['foo', 'bar']);
+    assert.deepEqual(req.query.get('foo'), 'foo');
+    assert.deepEqual(req.query.getAll('foo'), ['foo', 'bar']);
   });
 });
