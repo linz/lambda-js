@@ -20,9 +20,9 @@ export class LambdaCloudFrontRequest<T extends Record<string, string>> extends L
   }
 
   toResponse(res: LambdaHttpResponse): CloudFrontRequestResult {
-    // Continue
+    // HTTP 100 Continue
     if (res.status === 100 && this.event != null) {
-      const outRequest = this.event.Records[0]?.cf.request;
+      const outRequest = this.event.Records[0].cf.request;
       for (const [key, value] of res.headers) {
         outRequest.headers[key.toLowerCase()] = [{ key, value: String(value) }];
       }
@@ -68,12 +68,12 @@ export class LambdaCloudFrontRequest<T extends Record<string, string>> extends L
   }
 
   get body(): string | null {
-    const body = this.event.Records[0]?.cf.request.body;
+    const body = this.event.Records[0].cf.request.body;
     if (body == null) return null;
     return body.data;
   }
 
   get isBase64Encoded(): boolean {
-    return this.event.Records[0]?.cf.request.body?.encoding === 'base64';
+    return this.event.Records[0].cf.request.body?.encoding === 'base64';
   }
 }
