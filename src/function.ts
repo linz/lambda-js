@@ -32,9 +32,9 @@ export interface LambdaWrappedFunction<T, K = LambdaResponse | void> {
 export type LambdaWrappedFunctionHttp = (req: LambdaHttpRequest) => LambdaHttpResponse | Promise<LambdaHttpResponse>;
 export type LambdaHttpFunc = Handler<HttpRequestEvent, HttpResponse>;
 
-const version = process.env.GIT_VERSION;
-const hash = process.env.GIT_HASH;
-const buildId = process.env.BUILD_ID;
+const version = process.env['GIT_VERSION'];
+const hash = process.env['GIT_HASH'];
+const buildId = process.env['BUILD_ID'];
 const versionInfo = { version, hash, buildId };
 
 /** Run the request catching any errors */
@@ -161,7 +161,7 @@ export class lf {
       const req = new LambdaRequest<TEvent, TResult>(event, context, logger ?? lf.Logger);
       req.requestCount = lf.requestCount++;
       if (opts.tracePercent > 0 && Math.random() < opts.tracePercent) req.log.level = 'trace';
-      if (process.env.TRACE_LAMBDA) req.log.level = 'trace';
+      if (process.env['TRACE_LAMBDA']) req.log.level = 'trace';
 
       req.log.trace({ event }, 'Lambda:Start');
 

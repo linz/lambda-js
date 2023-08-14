@@ -20,11 +20,11 @@ export class LambdaCloudFrontRequest<T extends Record<string, string>> extends L
   toResponse(res: LambdaHttpResponse): CloudFrontRequestResult {
     // Continue
     if (res.status === 100 && this.event != null) {
-      const outRequest = this.event.Records[0].cf.request;
+      const outRequest = this.event.Records[0]!.cf.request;
       for (const [key, value] of res.headers) {
         outRequest.headers[key.toLowerCase()] = [{ key, value: String(value) }];
       }
-      return this.event.Records[0].cf.request;
+      return this.event.Records[0]!.cf.request;
     }
 
     return {
@@ -44,32 +44,32 @@ export class LambdaCloudFrontRequest<T extends Record<string, string>> extends L
   }
 
   loadHeaders(): void {
-    for (const [key, value] of Object.entries(this.event.Records[0].cf.request.headers)) {
-      this.headers.set(key.toLowerCase(), value[0]?.value);
+    for (const [key, value] of Object.entries(this.event.Records[0]!.cf.request.headers)) {
+      this.headers.set(key.toLowerCase(), value[0]!.value);
     }
   }
 
   loadQueryString(): URLSearchParams {
-    const query = this.event.Records[0].cf.request.querystring;
+    const query = this.event.Records[0]!.cf.request.querystring;
     if (query == null) return new URLSearchParams();
     return new URLSearchParams(query);
   }
 
   get path(): string {
-    return this.event.Records[0].cf.request.uri;
+    return this.event.Records[0]!.cf.request.uri;
   }
 
   get method(): string {
-    return this.event.Records[0].cf.request.method.toUpperCase();
+    return this.event.Records[0]!.cf.request.method.toUpperCase();
   }
 
   get body(): string | null {
-    const body = this.event.Records[0].cf.request.body;
+    const body = this.event.Records[0]?.cf.request.body;
     if (body == null) return null;
     return body.data;
   }
 
   get isBase64Encoded(): boolean {
-    return this.event.Records[0].cf.request.body?.encoding === 'base64';
+    return this.event.Records[0]?.cf.request.body?.encoding === 'base64';
   }
 }

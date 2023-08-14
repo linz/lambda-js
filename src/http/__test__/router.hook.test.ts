@@ -63,7 +63,7 @@ describe('RouterHook', () => {
   describe('response', () => {
     it('should allow overriding of response', async () => {
       const r = new Router();
-      r.hook('response', (req, res) => {
+      r.hook('response', (_req, res) => {
         assert.equal(res.status, 404);
         res.status = 200;
       });
@@ -107,9 +107,9 @@ describe('RouterHook', () => {
 
       assert.equal(fakeLog.logs.length, 1);
       const [firstLog] = fakeLog.logs;
-      assert.equal(firstLog.logParam, 'response');
-      assert.equal(firstLog['@type'], 'report');
-      assert.equal(firstLog['status'], 200);
+      assert.equal(firstLog?.['logParam'], 'response');
+      assert.equal(firstLog?.['@type'], 'report');
+      assert.equal(firstLog?.['status'], 200);
 
       assert.equal((res as ALBResult).statusCode, 200);
     });

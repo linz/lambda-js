@@ -244,7 +244,7 @@ export function newRequestCloudFront<T extends Record<string, string>>(
   query: string,
 ): LambdaCloudFrontRequest<T> {
   const example = clone(CloudfrontExample);
-  example.Records[0].cf.request.uri = encodeURI(path);
-  example.Records[0].cf.request.querystring = '?' + query;
+  example.Records[0]!.cf.request.uri = encodeURI(path);
+  example.Records[0]!.cf.request.querystring = '?' + query;
   return new LambdaCloudFrontRequest(example, fakeContext, fakeLog) as LambdaCloudFrontRequest<T>;
 }

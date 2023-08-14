@@ -22,7 +22,7 @@ export class LambdaHttpResponse {
     this.status = status;
     this.statusDescription = description;
     if (headers != null) {
-      for (const key of Object.keys(headers)) this.header(key, headers[key]);
+      for (const [key, value] of Object.entries(headers)) this.header(key, value);
     }
   }
 
