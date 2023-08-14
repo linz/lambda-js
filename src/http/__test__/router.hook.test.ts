@@ -1,7 +1,6 @@
 import { ALBResult, Context } from 'aws-lambda';
-import { describe, afterEach, it } from "node:test";
-import assert from "node:assert";
-import sinon from 'sinon';
+import { describe, afterEach, it } from 'node:test';
+import assert from 'node:assert';
 import { lf } from '../../function.js';
 import { AlbExample, UrlExample } from '../../__test__/examples.js';
 import { fakeLog } from '../../__test__/log.js';
@@ -11,26 +10,23 @@ import { Router } from '../router.js';
 
 describe('RouterHook', () => {
   const fakeContext = {} as Context;
-  const sandbox = sinon.createSandbox();
   const req = new LambdaUrlRequest(UrlExample, fakeContext, fakeLog);
 
-  afterEach(() => sandbox.restore());
-
   describe('request', () => {
-    it('should run before every request', async () => {
+    it('should run before every request', async (t) => {
       const r = new Router();
 
-      const hook = sandbox.stub();
+      const hook = t.mock.fn();
       r.hook('request', hook);
 
       const res = await r.handle(req);
 
       assert.equal(res.status, 404);
-      assert.equal(hook.calledOnce, true);
+      assert.equal(hook.mock.callCount(), 1);
 
       const resB = await r.handle(req);
       assert.equal(resB.status, 404);
-      assert.equal(hook.calledTwice, true);
+      assert.equal(hook.mock.callCount(), 2);
     });
 
     it('should allow request hooks to make responses', async () => {

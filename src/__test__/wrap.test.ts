@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ALBResult, APIGatewayProxyStructuredResultV2, CloudFrontResultResponse, Context } from 'aws-lambda';
-import { describe, beforeEach, it } from "node:test";
-import assert from "node:assert";
-import sinon from 'sinon';
+import { describe, beforeEach, it } from 'node:test';
+import assert from 'node:assert';
 import { lf } from '../function.js';
 import { LambdaRequest } from '../request.js';
 import { LambdaHttpRequest } from '../http/request.http.js';
@@ -19,7 +18,6 @@ function assertsUrlResult(x: unknown): asserts x is UrlResult {}
 
 describe('LambdaWrap', () => {
   const fakeContext = {} as Context;
-  const sandbox = sinon.createSandbox();
 
   const requests: LambdaHttpRequest[] = [];
   async function fakeLambda(req: LambdaHttpRequest): Promise<LambdaHttpResponse> {
@@ -137,10 +135,7 @@ describe('LambdaWrap', () => {
     assertCloudfrontResult(ret);
     assert.equal(ret.status, '200');
     assert.equal(ret.statusDescription, 'ok');
-    assert.deepEqual(
-      ret.headers?.['content-type'],
-      [{ key: 'content-type', value: 'application/json' }]
-    );
+    assert.deepEqual(ret.headers?.['content-type'], [{ key: 'content-type', value: 'application/json' }]);
 
     const body = JSON.parse(ret.body ?? '');
     assert.equal(body.message, 'ok');
@@ -232,10 +227,10 @@ describe('LambdaWrap', () => {
       { rejectOnError: false },
     );
     const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve({ a, b })));
-    assert.deepEqual(
-      ret,
-      { a: null, b: JSON.stringify({ id: requestId, status: 500, message: 'Internal Server Error' }) }
-    );
+    assert.deepEqual(ret, {
+      a: null,
+      b: JSON.stringify({ id: requestId, status: 500, message: 'Internal Server Error' }),
+    });
   });
 
   it('should pass body through', async () => {
@@ -267,13 +262,13 @@ describe('LambdaWrap', () => {
     assert.equal(ret.headers?.['server'], undefined);
   });
 
-  it('should trace some requests', async () => {
+  it('should trace some requests', async (t) => {
     const logLevels = new Map<string, number>();
     function fakeFn(req: LambdaRequest): void {
       logLevels.set(req.log.level, (logLevels.get(req.log.level) ?? 0) + 1);
     }
     let random = 0;
-    sandbox.stub(Math, 'random').callsFake(() => {
+    t.mock.method(Math, 'random', () => {
       const ret = random;
       random += 0.01;
       return ret;

@@ -1,5 +1,5 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
 import { RequestTypes } from '../../__test__/examples.js';
 import { LambdaHttpRequest } from '../request.http.js';
 import { LambdaHttpResponse } from '../response.http.js';
@@ -18,7 +18,7 @@ describe('Router', () => {
 
   for (const rt of RequestTypes) {
     describe(rt.type, () => {
-      o(`should route rainbows and unicorns`, async () => {
+      it(`should route rainbows and unicorns`, async () => {
         const urlRoute = rt.create('/v1/🦄/🌈/🦄.json', '🌈=🦄');
         const res = await router.handle(urlRoute);
         assert.equal(res.status, 200);
