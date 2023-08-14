@@ -34,7 +34,7 @@
   ],
   "dependencies": {
     "find-my-way": "^7.3.1",
-    "pino": "^8.10.0",
+    "pino": "^8.15.0",
     "ulid": "^2.3.0"
   }
 }
