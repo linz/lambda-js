@@ -1,5 +1,5 @@
 import { Callback, Context, Handler } from 'aws-lambda';
-import pino from 'pino';
+import { pino } from 'pino';
 import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
 import { LambdaAlbRequest } from './http/request.alb.js';
 import { LambdaApiGatewayRequest } from './http/request.api.gateway.js';
@@ -123,7 +123,7 @@ function addDefaultOptions(o?: Partial<LambdaHandlerOptions>): LambdaHandlerOpti
 
 export class lf {
   /** Default logger to use if one is not provided */
-  static Logger: LogType = pino.default();
+  static Logger: LogType = pino();
   /**
    * Set the http "Server" header to include this name
    * Setting to null or '' will not set the Server
