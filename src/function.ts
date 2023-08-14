@@ -123,7 +123,7 @@ function addDefaultOptions(o?: Partial<LambdaHandlerOptions>): LambdaHandlerOpti
 
 export class lf {
   /** Default logger to use if one is not provided */
-  static Logger: LogType = pino();
+  static Logger: LogType = pino.default();
   /**
    * Set the http "Server" header to include this name
    * Setting to null or '' will not set the Server
