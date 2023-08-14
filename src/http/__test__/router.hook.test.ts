@@ -1,9 +1,9 @@
 import { ALBResult, Context } from 'aws-lambda';
-import { describe, afterEach, it } from 'node:test';
 import assert from 'node:assert';
-import { lf } from '../../function.js';
+import { describe, it } from 'node:test';
 import { AlbExample, UrlExample } from '../../__test__/examples.js';
 import { fakeLog } from '../../__test__/log.js';
+import { lf } from '../../function.js';
 import { LambdaUrlRequest } from '../request.url.js';
 import { LambdaHttpResponse } from '../response.http.js';
 import { Router } from '../router.js';
