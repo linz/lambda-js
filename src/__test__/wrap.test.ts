@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import assert from 'node:assert';
+import { beforeEach, describe, it } from 'node:test';
+
 import {
   ALBResult,
   APIGatewayProxyStructuredResultV2,
@@ -7,16 +10,15 @@ import {
   KinesisStreamBatchResponse,
   KinesisStreamEvent,
 } from 'aws-lambda';
-import { describe, beforeEach, it } from 'node:test';
-import assert from 'node:assert';
+
 import { lf } from '../function.js';
-import { LambdaRequest } from '../request.js';
 import { LambdaHttpRequest } from '../http/request.http.js';
+import { UrlResult } from '../http/request.url.js';
 import { LambdaHttpResponse } from '../http/response.http.js';
+import { HttpMethods } from '../http/router.js';
+import { LambdaRequest } from '../request.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
-import { HttpMethods } from '../http/router.js';
-import { UrlResult } from '../http/request.url.js';
 
 function assertAlbResult(_x: unknown): asserts _x is ALBResult {}
 function assertCloudfrontResult(_x: unknown): asserts _x is CloudFrontResultResponse {}

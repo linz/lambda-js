@@ -1,4 +1,5 @@
 import { URLSearchParams } from 'url';
+
 import { isRecord } from '../request.js';
 import { LambdaApiGatewayRequest } from './request.api.gateway.js';
 import { LambdaHttpRequest } from './request.http.js';

@@ -1,5 +1,7 @@
-import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEventRecord, Context } from 'aws-lambda';
 import assert from 'node:assert';
+
+import { ALBEvent, APIGatewayProxyEvent, CloudFrontRequestEventRecord, Context } from 'aws-lambda';
+
 import { LambdaAlbRequest } from '../http/request.alb.js';
 import { LambdaApiGatewayRequest } from '../http/request.api.gateway.js';
 import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';

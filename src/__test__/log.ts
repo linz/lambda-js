@@ -1,4 +1,5 @@
 import { ulid } from 'ulid';
+
 import { LogType } from '../log.js';
 
 export class FakeLog implements LogType {

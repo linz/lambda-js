@@ -1,8 +1,10 @@
-import { Context } from 'aws-lambda';
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+
+import { Context } from 'aws-lambda';
+
 import { LambdaCloudFrontRequest } from '../http/request.cloudfront.js';
-import { AlbExample, ApiGatewayExample, CloudfrontExample, UrlExample, clone } from './examples.js';
+import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';
 
 describe('CloudFront', () => {

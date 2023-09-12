@@ -1,6 +1,8 @@
-import { ALBResult, Context } from 'aws-lambda';
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+
+import { ALBResult, Context } from 'aws-lambda';
+
 import { AlbExample, UrlExample } from '../../__test__/examples.js';
 import { fakeLog } from '../../__test__/log.js';
 import { lf } from '../../function.js';

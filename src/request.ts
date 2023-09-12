@@ -1,7 +1,8 @@
-import { Metrics } from './metric.js';
 import { Context } from 'aws-lambda';
 import { ulid } from 'ulid';
+
 import { LogType } from './log.js';
+import { Metrics } from './metric.js';
 import { LambdaResponse } from './response.js';
 
 export function isRecord(x: unknown): x is Record<string, unknown> {
