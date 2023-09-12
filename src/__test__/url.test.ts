@@ -1,6 +1,8 @@
-import { Context } from 'aws-lambda';
-import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
+
+import { Context } from 'aws-lambda';
+
 import { LambdaUrlRequest } from '../http/request.url.js';
 import { AlbExample, ApiGatewayExample, clone, CloudfrontExample, UrlExample } from './examples.js';
 import { fakeLog } from './log.js';

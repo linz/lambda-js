@@ -1,9 +1,11 @@
+import assert from 'node:assert';
+import { describe, it } from 'node:test';
+
+import { Context } from 'aws-lambda';
+
 import { LambdaAlbRequest } from '../http/request.alb.js';
 import { AlbExample, clone } from './examples.js';
 import { fakeLog } from './log.js';
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
-import { Context } from 'aws-lambda';
 
 describe('Request', () => {
   const fakeContext = {} as unknown as Context;

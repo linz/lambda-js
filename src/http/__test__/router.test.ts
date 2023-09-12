@@ -1,5 +1,6 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
+
 import { RequestTypes } from '../../__test__/examples.js';
 import { LambdaHttpRequest } from '../request.http.js';
 import { LambdaHttpResponse } from '../response.http.js';
