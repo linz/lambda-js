@@ -1,4 +1,4 @@
-import { Callback, CloudFrontRequestEventRecord, Context, Handler } from 'aws-lambda';
+import { CloudFrontRequestEventRecord, Context, Handler } from 'aws-lambda';
 import { pino } from 'pino';
 
 import { ApplicationJson, HttpHeader, HttpHeaderRequestId } from './header.js';
@@ -21,12 +21,6 @@ export type LambdaHandlerAsync<TEvent = unknown, TResult = unknown> = (
   event: TEvent,
   context: Context,
 ) => Promise<TResult>;
-
-export type LambdaHandler<TEvent = unknown, TResult = unknown> = (
-  event: TEvent,
-  context: Context,
-  callback: Callback<TResult>,
-) => void;
 export interface LambdaWrappedFunction<T, K = LambdaResponse | void> {
   (req: LambdaRequest<T>): K | Promise<K>;
 }
@@ -158,9 +152,9 @@ export class lf {
     fn: LambdaWrappedFunction<TEvent, TResult>,
     options?: Partial<LambdaHandlerOptions>,
     logger?: LogType,
-  ): LambdaHandler<TEvent, TResult> {
+  ): LambdaHandlerAsync<TEvent, TResult> {
     const opts = addDefaultOptions(options);
-    function handler(event: TEvent, context: Context, callback: Callback<TResult>): void {
+    async function handler(event: TEvent, context: Context): Promise<TResult> {
       const req = new LambdaRequest<TEvent, TResult>(event, context, logger ?? lf.Logger);
       req.requestCount = lf.requestCount++;
       if (opts.tracePercent > 0 && Math.random() < opts.tracePercent) req.log.level = 'trace';
@@ -171,19 +165,18 @@ export class lf {
       const lambdaId = context.awsRequestId;
       req.set('aws', { lambdaId });
 
-      runFunction(req, fn).then((res) => {
-        finalize(req, res);
+      const res = await runFunction(req, fn);
+      finalize(req, res);
 
-        if (LambdaHttpResponse.is(res)) {
-          if (opts.rejectOnError) {
-            if (req.logContext['err']) return callback(req.logContext['err'] as Error);
-            if (res.status > 399) return callback(req.toResponse(res) as unknown as string);
-          }
-          return callback(null, req.toResponse(res));
+      if (LambdaHttpResponse.is(res)) {
+        if (opts.rejectOnError) {
+          if (req.logContext['err']) throw req.logContext['err'] as Error;
+          if (res.status > 399) throw new Error(req.toResponse(res) as unknown as string);
         }
+        return req.toResponse(res);
+      }
 
-        return callback(null, res);
-      });
+      return res;
     }
     return handler;
   }
