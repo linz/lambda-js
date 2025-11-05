@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "npx eslint . --fix --ignore-path .gitignore",
-    "test": "node --test"
+    "test": "node --test \"build/src/**/*.test.js\""
   },
   "publishConfig": {
     "access": "public"
