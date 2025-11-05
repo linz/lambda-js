@@ -215,8 +215,13 @@ describe('LambdaWrap', () => {
     const fn = lf.handler(() => {
       throw new Error('Fake');
     });
-    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a) => resolve(a)));
-    assert.deepEqual(String(ret), 'Error: Fake');
+    await assert.rejects(
+      () => fn(ApiGatewayExample, fakeContext),
+      (err) => {
+        assert.deepEqual(String(err), 'Error: Fake');
+        return true;
+      },
+    );
 
     assert.equal(fakeLog.logs.length, 2);
 
@@ -239,18 +244,15 @@ describe('LambdaWrap', () => {
       },
       { rejectOnError: false },
     );
-    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (a, b) => resolve({ a, b })));
-    assert.deepEqual(ret, {
-      a: null,
-      b: JSON.stringify({ id: requestId, status: 500, message: 'Internal Server Error' }),
-    });
+    const ret = await fn(ApiGatewayExample, fakeContext);
+    assert.deepEqual(ret, JSON.stringify({ id: requestId, status: 500, message: 'Internal Server Error' }));
   });
 
   it('should pass body through', async () => {
     const fn = lf.handler(() => {
       return 'fooBar';
     });
-    const ret = await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (_err, b) => resolve(b)));
+    const ret = await fn(ApiGatewayExample, fakeContext);
     assert.equal(ret, 'fooBar');
 
     assert.equal(fakeLog.logs.length, 2);
@@ -290,7 +292,7 @@ describe('LambdaWrap', () => {
 
     const fn = lf.handler(fakeFn, { tracePercent: 0.5 });
     for (let i = 0; i < 100; i++) {
-      await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (_err, b) => resolve(b)));
+      await fn(ApiGatewayExample, fakeContext);
     }
     assert.equal(logLevels.get('debug'), 50);
     assert.equal(logLevels.get('trace'), 50);
@@ -305,7 +307,7 @@ describe('LambdaWrap', () => {
 
     const fn = lf.handler(fakeFn, { tracePercent: 0.1 });
     for (let i = 0; i < 10; i++) {
-      await new Promise((resolve) => fn(ApiGatewayExample, fakeContext, (_err, b) => resolve(b)));
+      await fn(ApiGatewayExample, fakeContext);
     }
     assert.equal(logLevels.get('debug'), undefined);
     assert.equal(logLevels.get('trace'), 10);
@@ -326,13 +328,12 @@ describe('LambdaWrap', () => {
 
     const fn = lf.handler<KinesisStreamEvent, KinesisStreamBatchResponse | void>(fakeFn);
 
-    const emptyResponse = await new Promise((resolve) => fn({ Records: [] }, fakeContext, (_err, b) => resolve(b)));
+    const emptyResponse = await fn({ Records: [] }, fakeContext);
     assert.deepEqual(emptyResponse, undefined);
 
-    const actualResponse = await new Promise((resolve) =>
-      fn({ Records: [{ kinesis: { sequenceNumber: '123' } }] } as KinesisStreamEvent, fakeContext, (_err, b) =>
-        resolve(b),
-      ),
+    const actualResponse = await fn(
+      { Records: [{ kinesis: { sequenceNumber: '123' } }] } as KinesisStreamEvent,
+      fakeContext,
     );
     assert.deepEqual(actualResponse, { batchItemFailures: [{ itemIdentifier: '123' }] });
   });
