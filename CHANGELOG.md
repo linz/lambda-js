@@ -1,4 +1,16 @@
 <a name="3.2.1"></a>
+## [4.2.0](https://github.com/linz/lambda-js/compare/v4.1.0...v4.2.0) (2025-11-11)
+
+
+### Features
+
+* **deps:** bump pino from 8.15.1 to 8.16.2 ([#388](https://github.com/linz/lambda-js/issues/388)) ([943764f](https://github.com/linz/lambda-js/commit/943764f8d06eb4a3195b0f0b9e1a1df452f9a812))
+
+
+### Bug Fixes
+
+* use npm trusted publishing ([#404](https://github.com/linz/lambda-js/issues/404)) ([266ec0c](https://github.com/linz/lambda-js/commit/266ec0c9761abe64e43d93f7f5b862c239be5cc0))
+
 ## [4.1.0](https://github.com/linz/lambda-js/compare/v4.0.0...v4.1.0) (2023-08-14)
 
 
