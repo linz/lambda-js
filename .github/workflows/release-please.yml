@@ -19,6 +19,9 @@ jobs:
           token: ${{ secrets.LI_GITHUB_ACTION_TOKEN }}
 
   publish-release:
+    permissions:
+      id-token: write # Required for OIDC
+      contents: read
     needs: release-please
     runs-on: ubuntu-latest
     environment:
@@ -29,5 +32,3 @@ jobs:
 
       - name: Publish to Github
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN_LINZJS}}
